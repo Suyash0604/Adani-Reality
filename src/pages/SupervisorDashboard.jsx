@@ -1,0 +1,560 @@
+import { useState, useEffect } from 'react';
+import { 
+  Radio, 
+  MessageSquare, 
+  Users, 
+  Mic, 
+  MicOff, 
+  LogOut, 
+  AlertCircle, 
+  TrendingDown, 
+  Send,
+  Sparkles,
+  Zap,
+  CheckCircle2
+} from 'lucide-react';
+import AppShell from '../components/layout/AppShell';
+import { supervisorAgents, supervisorKpis } from '../data/mockData';
+
+const kpiCards = [
+  { label: 'Active Calls', value: supervisorKpis.activeCalls },
+  { label: 'Avg Handle Time', value: supervisorKpis.avgHandleTime },
+  { label: 'Site Visits Booked', value: supervisorKpis.siteVisitsBooked },
+  { label: 'Avg Intent Score', value: `${supervisorKpis.avgIntentScore}/100` },
+];
+
+const mockTranscripts = [
+  { speaker: 'Customer', text: 'I am looking at properties in North Ahmedabad.' },
+  { speaker: 'Agent', text: 'Great! We have some premium options in Atelier Greens.' },
+  { speaker: 'Customer', text: 'What is the current possession timeline?' },
+  { speaker: 'Agent', text: 'It is scheduled for December 2025. Would you like a site visit?' },
+  { speaker: 'Customer', text: 'I need to check my schedule first.' },
+  { speaker: 'Agent', text: 'Understood. We have a special festive offer valid this weekend.' },
+];
+
+const SupervisorDashboard = () => {
+  // Global Floor State
+  const [activeIntervention, setActiveIntervention] = useState(null); // 'monitor' | 'whisper' | 'barge'
+  const [targetAgentId, setTargetAgentId] = useState(null);
+  const [whisperText, setWhisperText] = useState('');
+  const [whisperHistory, setWhisperHistory] = useState([]);
+  const [isMuted, setIsMuted] = useState(false);
+  const [toasts, setToasts] = useState([]);
+  const [selectedAgent, setSelectedAgent] = useState(null);
+  
+  // Real-time Agent Data (for demo updates)
+  const [agentsData, setAgentsData] = useState(supervisorAgents);
+  
+  // Reaction States
+  const [isAdapting, setIsAdapting] = useState(false);
+  const [lastWhisperReaction, setLastWhisperReaction] = useState(null);
+
+  // Intervention Timers
+  const [interventionDuration, setInterventionDuration] = useState(0);
+  const [transcriptIndex, setTranscriptIndex] = useState(0);
+
+  useEffect(() => {
+    let timer;
+    if (activeIntervention) {
+      timer = setInterval(() => {
+        setInterventionDuration(prev => prev + 1);
+      }, 1000);
+    } else {
+      setInterventionDuration(0);
+    }
+    return () => clearInterval(timer);
+  }, [activeIntervention]);
+
+  useEffect(() => {
+    let transcriptTimer;
+    if (activeIntervention === 'monitor') {
+      transcriptTimer = setInterval(() => {
+        setTranscriptIndex(prev => (prev + 1) % mockTranscripts.length);
+      }, 3000);
+    }
+    return () => clearInterval(transcriptTimer);
+  }, [activeIntervention]);
+
+  const formatTime = (seconds) => {
+    const min = Math.floor(seconds / 60);
+    const sec = seconds % 60;
+    return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+  };
+
+  const addToast = (message, type = 'info') => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 3000);
+  };
+
+  const handleIntervention = (type, agentId, agentName) => {
+    setActiveIntervention(type);
+    setTargetAgentId(agentId);
+    setTranscriptIndex(0);
+    setWhisperHistory([]);
+    setLastWhisperReaction(null);
+    
+    if (type === 'monitor') addToast(`Started monitoring ${agentName}`, 'info');
+    if (type === 'whisper') addToast(`Whisper mode active for ${agentName}`, 'warning');
+    if (type === 'barge') addToast(`Joined ${agentName}'s call`, 'error');
+  };
+
+  const stopIntervention = () => {
+    const agentName = agentsData.find(a => a.id === targetAgentId)?.name;
+    if (activeIntervention === 'whisper') addToast(`Whisper session ended for ${agentName}`, 'info');
+    if (activeIntervention === 'monitor') addToast(`Monitoring stopped for ${agentName}`, 'info');
+    setActiveIntervention(null);
+    setTargetAgentId(null);
+    setWhisperText('');
+    setIsAdapting(false);
+  };
+
+  const sendWhisper = (agentName) => {
+    if (!whisperText.trim()) return;
+    const msg = whisperText.trim();
+    setWhisperHistory(prev => [...prev, msg]);
+    setWhisperText('');
+    addToast(`Whisper sent to ${agentName}`, 'success');
+    
+    // Simulate Agent Adaptation
+    setIsAdapting(true);
+    setTimeout(() => {
+      setIsAdapting(false);
+      setLastWhisperReaction("We also have flexible pricing and limited availability for south-facing units...");
+      
+      // Improve score after successful whisper
+      setAgentsData(prev => prev.map(a => {
+        if (a.id === targetAgentId) {
+          const newScore = Math.min(a.scriptScore + 4, 100);
+          return { ...a, scriptScore: newScore, alert: false };
+        }
+        return a;
+      }));
+    }, 2000);
+  };
+
+  const targetAgentInfo = agentsData.find(a => a.id === targetAgentId);
+
+  return (
+    <AppShell title="Live Command Center">
+      {/* Toast Container */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
+        {toasts.map(t => (
+          <div key={t.id} className={`animate-in slide-in-from-right-8 rounded-xl px-4 py-3 text-sm font-bold shadow-2xl flex items-center gap-2 border ${
+            t.type === 'error' ? 'bg-rose-600 text-white border-rose-500 shadow-rose-900/40' : 
+            t.type === 'warning' ? 'bg-amber-500 text-white border-amber-400 shadow-amber-900/40' : 
+            t.type === 'success' ? 'bg-emerald-600 text-white border-emerald-500 shadow-emerald-900/40' :
+            'bg-[#0A2C5E] text-white border-slate-700 shadow-[#0A2C5E]/40'
+          }`}>
+            <Zap size={14} className="animate-pulse" />
+            {t.message}
+          </div>
+        ))}
+      </div>
+
+      {/* Global Floor State Banner */}
+      <section className={`mb-6 transition-all duration-500 rounded-2xl p-4 flex items-center justify-between border shadow-lg ${
+        activeIntervention === 'barge' ? 'bg-rose-50 border-rose-200 animate-pulse' :
+        activeIntervention === 'whisper' ? 'bg-amber-50 border-amber-200 ring-2 ring-amber-400/20 shadow-amber-100' :
+        activeIntervention === 'monitor' ? 'bg-blue-50 border-blue-200 ring-2 ring-blue-400/20 shadow-blue-100' :
+        'bg-white border-slate-100'
+      }`}>
+        <div className="flex items-center gap-4">
+          <div className={`rounded-full p-2.5 transition-all duration-300 ${
+            activeIntervention ? 'bg-white shadow-md scale-110' : 'bg-slate-100'
+          }`}>
+            {activeIntervention === 'barge' ? <Users className="text-rose-600" /> :
+             activeIntervention === 'whisper' ? <MessageSquare className="text-amber-500 animate-bounce" /> :
+             activeIntervention === 'monitor' ? <Radio className="text-blue-600 animate-pulse" /> :
+             <Radio className="text-slate-400" />}
+          </div>
+          <div>
+            <h2 className="text-sm font-bold text-slate-800 tracking-tight uppercase flex items-center gap-2">
+              {activeIntervention ? (
+                <>
+                  <span className={
+                    activeIntervention === 'monitor' ? 'text-blue-600' : 
+                    activeIntervention === 'whisper' ? 'text-amber-600' : 
+                    'text-rose-600'
+                  }>
+                    {activeIntervention === 'monitor' ? '👂 MONITORING ACTIVE' : 
+                     activeIntervention === 'whisper' ? '💬 WHISPER MODE' : 
+                     '🚀 BARGE-IN ACTIVE'}
+                  </span>
+                  <span className="text-slate-300">|</span>
+                  <span className="text-slate-600">Agent: {targetAgentInfo?.name}</span>
+                  <span className="text-slate-300">|</span>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-mono tracking-tighter text-white ${
+                    activeIntervention === 'monitor' ? 'bg-blue-600' : 
+                    activeIntervention === 'whisper' ? 'bg-amber-600' : 
+                    'bg-rose-600'
+                  }`}>
+                    {formatTime(interventionDuration)}
+                  </span>
+                </>
+              ) : "Command Center Idle"}
+            </h2>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">
+              {activeIntervention === 'barge' ? "You are speaking in the 3-way conference." :
+               activeIntervention === 'whisper' ? `Private coaching active for ${targetAgentInfo?.name} • Guidance history enabled` :
+               activeIntervention === 'monitor' ? "Silent Listening Mode • Real-time transcript preview enabled" :
+               "All agents operating normally."}
+            </p>
+          </div>
+        </div>
+        
+        {activeIntervention && (
+          <button 
+            onClick={stopIntervention}
+            className="flex items-center gap-2 rounded-xl bg-slate-800 px-4 py-2 text-xs font-bold text-white hover:bg-slate-900 transition-all active:scale-95 shadow-md group"
+          >
+            <LogOut size={14} className="group-hover:-translate-x-1 transition-transform" /> Stop Intervention
+          </button>
+        )}
+      </section>
+
+      {/* KPI Overview */}
+      <section className={`grid grid-cols-4 gap-4 mb-8 transition-all duration-500 ${activeIntervention ? 'opacity-40 grayscale-[0.5] pointer-events-none scale-95' : 'opacity-100'}`}>
+        {kpiCards.map((card) => (
+          <article key={card.label} className="rounded-2xl bg-white p-5 shadow-sm border border-slate-100 group hover:shadow-md transition-all">
+            <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400">{card.label}</p>
+            <div className="flex items-end justify-between mt-2">
+              <p className="text-3xl font-bold text-[#0A2C5E]">{card.value}</p>
+              <div className="h-2 w-12 rounded-full bg-slate-50 overflow-hidden">
+                <div className="h-full w-2/3 bg-[#0A2C5E] opacity-20" />
+              </div>
+            </div>
+          </article>
+        ))}
+      </section>
+
+      <div className="grid grid-cols-1 gap-6">
+        <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+          <Radio size={20} className="text-[#D71920]" />
+          Real-Time Floor Map
+        </h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {agentsData.map((agent) => {
+            const isTarget = targetAgentId === agent.id;
+            const otherActive = activeIntervention && !isTarget;
+            const cardMode = isTarget ? activeIntervention : null;
+            
+            return (
+              <article
+                key={agent.id}
+                onClick={() => !activeIntervention && setSelectedAgent(agent)}
+                className={`group relative rounded-2xl border-2 transition-all duration-300 overflow-hidden shadow-sm ${
+                  cardMode === 'barge' ? 'border-rose-500 bg-rose-50/50 shadow-rose-200 shadow-xl scale-[1.02] z-20' :
+                  cardMode === 'whisper' ? 'border-amber-400 bg-amber-50 shadow-amber-200 shadow-2xl scale-[1.05] z-20' :
+                  cardMode === 'monitor' ? 'border-blue-500 bg-blue-50 shadow-blue-200 shadow-2xl scale-105 z-20' :
+                  otherActive ? 'opacity-40 blur-[1px] border-slate-100 grayscale-[0.4] scale-95' :
+                  agent.alert ? 'border-rose-300 bg-white shadow-lg cursor-pointer' : 'border-slate-100 bg-white hover:border-slate-300 cursor-pointer'
+                }`}
+              >
+                {/* Visual Status Indicator */}
+                {cardMode === 'monitor' && <div className="absolute top-0 inset-x-0 h-1.5 bg-blue-500 animate-pulse" />}
+                {cardMode === 'whisper' && <div className="absolute top-0 inset-x-0 h-1.5 bg-amber-500 animate-pulse" />}
+                {cardMode === 'barge' && <div className="absolute top-0 inset-x-0 h-1.5 bg-rose-500 animate-pulse" />}
+
+                {/* Alert Ribbon */}
+                {agent.alert && !cardMode && (
+                  <div className="bg-rose-500 px-4 py-1.5 flex items-center justify-between text-white">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle size={14} />
+                      <span className="text-[10px] font-bold uppercase tracking-wider">Critical Deviation</span>
+                    </div>
+                    <span className="text-[10px] font-bold bg-white/20 px-1.5 rounded">HIGH RISK</span>
+                  </div>
+                )}
+
+                <div className="p-5">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="text-lg font-bold text-[#0A2C5E] group-hover:text-[#D71920] transition-colors">{agent.name}</h3>
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-tighter mt-0.5">{agent.status} • {agent.duration}</p>
+                    </div>
+                    <div className={`rounded-full px-2 py-1 text-[10px] font-black uppercase ${
+                      agent.sentiment === 'Positive' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'
+                    }`}>
+                      {agent.sentiment}
+                    </div>
+                  </div>
+
+                  {/* AI Pulse / Whisper Feedback */}
+                  {cardMode === 'whisper' ? (
+                     <div className="space-y-4 mb-4 animate-in fade-in zoom-in-95 duration-500">
+                        {/* Status Message */}
+                        <div className={`rounded-xl px-3 py-2 flex items-center gap-3 transition-colors ${
+                          isAdapting ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
+                        }`}>
+                          {isAdapting ? <Sparkles size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
+                          <span className="text-[11px] font-bold">
+                            {isAdapting ? "Agent adapting response..." : "Agent improved response based on coaching"}
+                          </span>
+                        </div>
+                        
+                        {/* Reaction Transcript */}
+                        {lastWhisperReaction && (
+                           <div className="bg-white border border-amber-100 rounded-xl p-3 shadow-inner italic">
+                             <div className="flex items-center gap-2 mb-1">
+                               <Radio size={10} className="text-blue-400" />
+                               <span className="text-[9px] font-black text-slate-400 uppercase">Live Output</span>
+                             </div>
+                             <p className="text-[11px] text-slate-600 leading-relaxed font-medium">"{lastWhisperReaction}"</p>
+                           </div>
+                        )}
+
+                        {/* Whisper History */}
+                        <div className="space-y-1.5 max-h-32 overflow-y-auto pr-1">
+                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-1">Session Guidance</p>
+                          {whisperHistory.map((m, i) => (
+                            <div key={i} className="bg-amber-600 text-white text-[10px] px-3 py-2 rounded-xl rounded-tr-none ml-6 font-medium shadow-sm">
+                              {m}
+                            </div>
+                          ))}
+                        </div>
+                     </div>
+                  ) : cardMode === 'monitor' ? (
+                     <div className="bg-blue-600 rounded-xl p-3 mb-4 text-white shadow-inner animate-in fade-in duration-500">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                             <Radio size={12} className="animate-pulse" />
+                             <span className="text-[10px] font-bold tracking-widest uppercase">Live Transcript</span>
+                          </div>
+                          <div className="flex gap-0.5">
+                            <div className="w-0.5 h-3 bg-white/40 animate-[bounce_1s_infinite_0ms]" />
+                            <div className="w-0.5 h-4 bg-white animate-[bounce_1.2s_infinite_200ms]" />
+                            <div className="w-0.5 h-2 bg-white/60 animate-[bounce_0.8s_infinite_400ms]" />
+                          </div>
+                        </div>
+                        <div className="space-y-1 mt-2">
+                          <p className="text-[8px] font-bold text-blue-200 uppercase tracking-wider">
+                            {mockTranscripts[transcriptIndex].speaker}
+                          </p>
+                          <p className="text-xs font-medium leading-relaxed animate-in slide-in-from-bottom-1">
+                            "{mockTranscripts[transcriptIndex].text}"
+                          </p>
+                        </div>
+                     </div>
+                  ) : (
+                    <div className="bg-slate-50 rounded-xl p-3 mb-4 border border-slate-100">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <Sparkles size={12} className="text-[#0A2C5E]" />
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Live AI Insight {agent.alert ? "🔴" : "🟢"}</span>
+                      </div>
+                      <p className="text-xs text-slate-700 font-medium leading-relaxed italic">
+                        {agent.alert ? "Customer raised pricing objection. Agent is struggling to pivot to value-prop." : "Customer is showing high intent. Guide agent to confirm site visit."}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Progress & Risk */}
+                  <div className="space-y-3 mb-6">
+                    <div>
+                      <div className="flex justify-between text-[10px] font-bold text-slate-400 mb-1 uppercase">
+                        <span>Script Adherence</span>
+                        <span className={`transition-colors duration-1000 ${isTarget ? 'text-[#D71920]' : 'text-[#0A2C5E]'}`}>
+                          {agent.scriptScore}%
+                        </span>
+                      </div>
+                      <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                        <div className={`h-full transition-all duration-[1500ms] ease-out ${
+                          cardMode === 'whisper' ? 'bg-amber-500' : 
+                          cardMode === 'monitor' ? 'bg-blue-500' : 
+                          'bg-[#0A2C5E]'
+                        }`} style={{ width: `${agent.scriptScore}%` }} />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Intervention Controls */}
+                  <div className="grid grid-cols-3 gap-2" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      disabled={activeIntervention && !isTarget}
+                      onClick={() => handleIntervention('monitor', agent.id, agent.name)}
+                      className={`flex flex-col items-center gap-1.5 rounded-xl py-2 transition-all ${
+                        cardMode === 'monitor' ? 'bg-blue-600 text-white shadow-blue-300 shadow-md ring-2 ring-white/20' : 
+                        activeIntervention && !isTarget ? 'bg-slate-50 text-slate-300 cursor-not-allowed opacity-0' :
+                        'bg-blue-50 text-blue-700 hover:bg-blue-100'
+                      }`}
+                    >
+                      <Radio size={16} />
+                      <span className="text-[9px] font-bold uppercase">Monitor</span>
+                    </button>
+                    <button
+                      disabled={activeIntervention && !isTarget}
+                      onClick={() => handleIntervention('whisper', agent.id, agent.name)}
+                      className={`flex flex-col items-center gap-1.5 rounded-xl py-2 transition-all ${
+                        cardMode === 'whisper' ? 'bg-amber-500 text-white shadow-amber-300 shadow-md ring-2 ring-white/20' : 
+                        activeIntervention && !isTarget ? 'bg-slate-50 text-slate-300 cursor-not-allowed opacity-0' :
+                        'bg-amber-50 text-amber-700 hover:bg-amber-100'
+                      }`}
+                    >
+                      <MessageSquare size={16} />
+                      <span className="text-[9px] font-bold uppercase">Whisper</span>
+                    </button>
+                    <button
+                      disabled={activeIntervention && !isTarget}
+                      onClick={() => handleIntervention('barge', agent.id, agent.name)}
+                      className={`flex flex-col items-center gap-1.5 rounded-xl py-2 transition-all ${
+                        cardMode === 'barge' ? 'bg-rose-600 text-white shadow-rose-300 shadow-md ring-2 ring-white/20' : 
+                        activeIntervention && !isTarget ? 'bg-slate-50 text-slate-300 cursor-not-allowed opacity-0' :
+                        'bg-rose-50 text-rose-700 hover:bg-rose-100'
+                      }`}
+                    >
+                      <Users size={16} />
+                      <span className="text-[9px] font-bold uppercase">Barge</span>
+                    </button>
+                  </div>
+
+                  {/* Contextual Input/Controls */}
+                  {cardMode === 'whisper' && (
+                    <div className="mt-4 animate-in zoom-in-95" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex gap-2">
+                        <input 
+                          type="text" 
+                          placeholder="Type whisper guide..."
+                          value={whisperText}
+                          onChange={(e) => setWhisperText(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && sendWhisper(agent.name)}
+                          className="flex-1 rounded-xl bg-white border-amber-200 px-3 py-2 text-xs focus:ring-1 focus:ring-amber-500 focus:outline-none"
+                        />
+                        <button 
+                          onClick={() => sendWhisper(agent.name)}
+                          className="rounded-xl bg-amber-500 p-2 text-white shadow-sm hover:bg-amber-600 transition-colors"
+                        >
+                          <Send size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {cardMode === 'barge' && (
+                    <div className="mt-4 flex gap-2 animate-in zoom-in-95" onClick={(e) => e.stopPropagation()}>
+                      <button 
+                        onClick={() => setIsMuted(!isMuted)}
+                        className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-2 text-[10px] font-bold uppercase transition-all ${
+                          isMuted ? 'bg-slate-200 text-slate-500' : 'bg-rose-100 text-rose-700'
+                        }`}
+                      >
+                        {isMuted ? <MicOff size={14} /> : <Mic size={14} />}
+                        {isMuted ? "Unmute self" : "Mic On"}
+                      </button>
+                      <button 
+                        onClick={stopIntervention}
+                        className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-slate-800 py-2 text-[10px] font-bold uppercase text-white shadow-md transition-all active:scale-95"
+                      >
+                        <LogOut size={14} /> Leave Call
+                      </button>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Glow Overlay for Active State */}
+                {isTarget && (
+                  <div className={`absolute top-0 right-0 p-2 animate-pulse`}>
+                    <div className={`h-2.5 w-2.5 rounded-full ${
+                      cardMode === 'barge' ? 'bg-rose-500 shadow-[0_0_12px_#f43f5e]' :
+                      cardMode === 'whisper' ? 'bg-amber-500 shadow-[0_0_12px_#f59e0b]' :
+                      'bg-blue-500 shadow-[0_0_12px_#3b82f6]'
+                    }`} />
+                  </div>
+                )}
+              </article>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Agent Details Modal (Placeholder same as before but uses local agentsData) */}
+      {selectedAgent && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+           <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-8 duration-500 max-h-[90vh] flex flex-col">
+            <div className="bg-[#0A2C5E] p-6 text-white flex justify-between items-center">
+              <div>
+                <h3 className="text-2xl font-bold">{selectedAgent.name}</h3>
+                <p className="text-xs text-white/60 font-bold uppercase tracking-widest mt-1">Live Call Analysis • Customer: {selectedAgent.customer}</p>
+              </div>
+              <button 
+                onClick={() => setSelectedAgent(null)}
+                className="rounded-full hover:bg-white/10 p-2 transition-colors"
+                type="button"
+              >
+                <LogOut className="rotate-180" />
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-6 grid grid-cols-12 gap-6 bg-slate-50">
+              <div className="col-span-12 lg:col-span-8 flex flex-col gap-4">
+                <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-100 flex-1 min-h-[300px]">
+                  <h4 className="text-xs font-black uppercase text-slate-400 mb-4 tracking-widest flex items-center gap-2">
+                    <Radio size={14} className="text-rose-500 animate-pulse" />
+                    Live Transcript Stream
+                  </h4>
+                  <div className="space-y-4">
+                    <div className="flex flex-col gap-1 max-w-[80%]">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase ml-3">Agent</span>
+                      <p className="bg-[#0A2C5E] text-white text-sm px-4 py-3 rounded-2xl rounded-tl-none shadow-sm">
+                        Hello Sneha ji, I noticed you were looking for 3BHK options in Atelier Greens.
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-end gap-1 ml-auto max-w-[80%]">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase mr-3">Customer</span>
+                      <p className="bg-white text-slate-700 text-sm px-4 py-3 rounded-2xl rounded-tr-none shadow-sm border border-slate-100 italic">
+                        Yes, but I am specifically worried about the GST impact and all-inclusive pricing.
+                      </p>
+                    </div>
+                    <div className="flex flex-col gap-1 max-w-[80%]">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase ml-3">Agent</span>
+                      <p className="bg-[#0A2C5E] text-white text-sm px-4 py-3 rounded-2xl rounded-tl-none shadow-sm">
+                        I completely understand. We have a festive offer that covers a substantial part of the registration costs...
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="col-span-12 lg:col-span-4 space-y-6">
+                <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-100">
+                  <h4 className="text-xs font-black uppercase text-slate-400 mb-4 tracking-widest flex items-center gap-2">
+                    <Sparkles size={14} className="text-amber-500" />
+                    Real-time AI Assist
+                  </h4>
+                  <div className="space-y-4">
+                    <div className="bg-amber-50 p-3 rounded-xl border border-amber-100">
+                      <p className="text-[10px] font-black text-amber-700 uppercase mb-1">Suggested Pivot</p>
+                      <p className="text-xs text-amber-900 font-medium leading-relaxed">
+                        Customer is stalling on tax. Briefly explain the 'Ready-to-move' GST benefits to rebuild value.
+                      </p>
+                    </div>
+                    <div className="bg-blue-50 p-3 rounded-xl border border-blue-100">
+                      <p className="text-[10px] font-black text-blue-700 uppercase mb-1">Intent Scoring</p>
+                      <div className="mt-2 h-2 w-full bg-blue-200/50 rounded-full overflow-hidden">
+                        <div className="h-full bg-blue-600 transition-all duration-1000" style={{ width: '82%' }} />
+                      </div>
+                      <p className="text-[10px] font-bold text-blue-800 mt-1 uppercase">82% Intent High</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-4 bg-slate-100 border-t border-slate-200 flex justify-end items-center px-8">
+              <button 
+                onClick={() => setSelectedAgent(null)}
+                className="bg-[#0A2C5E] text-white px-8 py-2.5 rounded-xl text-xs font-extrabold uppercase shadow-xl transition-all active:scale-95"
+              >
+                Return to Command Center
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </AppShell>
+  );
+};
+
+export default SupervisorDashboard;

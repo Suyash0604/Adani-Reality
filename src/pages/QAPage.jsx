@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import AppShell from '../components/layout/AppShell';
 import { useApp } from '../context/useApp';
+import { useAuth } from '../context/useAuth';
 
 const PerformanceIndicator = ({ label, status }) => {
   const isPositive = status === 'pass';
@@ -49,7 +50,10 @@ const PerformanceIndicator = ({ label, status }) => {
 const QAPage = () => {
   const { callId } = useParams();
   const { qaResult, lastCallSummary, callRecords } = useApp();
+  const { user } = useAuth();
   const navigate = useNavigate();
+  
+  const isAgent = user?.role === 'agent';
   const [loading, setLoading] = useState(true);
 
   const activeCallData = useMemo(() => {
@@ -81,7 +85,7 @@ const QAPage = () => {
 
   if (loading) {
     return (
-      <AppShell title="Manager View">
+      <AppShell title={isAgent ? "Personal Analysis" : "Manager View"}>
         <div className="flex h-[70vh] flex-col items-center justify-center">
           <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-100 border-t-[#0A2C5E]" />
           <p className="mt-4 text-sm font-bold text-slate-600 tracking-widest uppercase animate-pulse">Scanning Call Signals...</p>
@@ -92,7 +96,7 @@ const QAPage = () => {
 
   if (!activeCallData) {
     return (
-      <AppShell title="Manager Analysis">
+      <AppShell title={isAgent ? "Analysis Dashboard" : "Manager Analysis"}>
         <div className="flex h-[70vh] flex-col items-center justify-center text-center">
           <FileText size={48} className="text-slate-200 mb-4" />
           <h2 className="text-xl font-bold text-slate-800">Intelligence Deficit</h2>
@@ -110,7 +114,7 @@ const QAPage = () => {
   const improvement = score - previousScore;
 
   return (
-    <AppShell title="Manager Insights">
+    <AppShell title={isAgent ? "My Intelligence" : "Manager Insights"}>
       <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in duration-500">
         
         {/* Minimal Header */}
@@ -239,7 +243,9 @@ const QAPage = () => {
             <div className="grid grid-cols-2 gap-6">
                {/* Coaching Focus */}
                <section className="bg-amber-50 rounded-3xl p-6 border border-amber-100">
-                 <h3 className="text-xs font-black uppercase text-amber-700/60 tracking-[0.2em] mb-4">Manager To-Do</h3>
+                 <h3 className="text-xs font-black uppercase text-amber-700/60 tracking-[0.2em] mb-4">
+                   {isAgent ? "Coaching Feedback" : "Manager To-Do"}
+                 </h3>
                  <div className="space-y-4">
                    <div className="flex items-start gap-3">
                       <Sparkles size={16} className="text-amber-600 mt-0.5" />
@@ -276,7 +282,9 @@ const QAPage = () => {
 
             {/* Quick Actions Panel */}
             <section className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm mt-4">
-              <h3 className="text-xs font-black uppercase text-slate-400 tracking-[0.2em] mb-6">Management Decisions</h3>
+              <h3 className="text-xs font-black uppercase text-slate-400 tracking-[0.2em] mb-6">
+                {isAgent ? "Session Summary" : "Management Decisions"}
+              </h3>
               <div className="grid grid-cols-3 gap-4">
                 <button className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-slate-100 hover:border-[#0A2C5E] transition-all group">
                   <FileText size={20} className="text-slate-600 group-hover:text-[#0A2C5E]" />

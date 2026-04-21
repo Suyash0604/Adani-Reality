@@ -6,6 +6,8 @@ import QAPage from '../pages/QAPage';
 import CallRecords from '../pages/CallRecords';
 import SalesforceMock from '../pages/SalesforceMock';
 import SecurityPanel from '../pages/SecurityPanel';
+import CampaignDetailInbound from '../pages/CampaignDetailInbound';
+import CampaignDetailOutbound from '../pages/CampaignDetailOutbound';
 import ProtectedRoute from '../components/shared/ProtectedRoute';
 
 const AppRoutes = () => {
@@ -25,6 +27,8 @@ const AppRoutes = () => {
 
       <Route element={<ProtectedRoute allowedRoles={['supervisor']} />}>
         <Route path="/supervisor" element={<SupervisorDashboard />} />
+        <Route path="/campaigns/inbound/:campaignId" element={<CampaignDetailInbound />} />
+        <Route path="/campaigns/outbound/:campaignId" element={<CampaignDetailOutbound />} />
       </Route>
 
       <Route element={<ProtectedRoute allowedRoles={['admin']} />}>

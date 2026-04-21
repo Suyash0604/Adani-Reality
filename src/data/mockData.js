@@ -145,3 +145,111 @@ export const securityMatrix = [
     dataAccess: 'Assigned leads only',
   },
 ];
+
+export const campaignData = {
+  kpis: {
+    totalInbound: 1240,
+    totalOutbound: 3500,
+    siteVisitsBooked: 42,
+    activeCampaigns: 6
+  },
+  inbound: [
+    {
+      id: 'ib-1',
+      title: 'Customer Grievance',
+      callsToday: 145,
+      resolutionRate: 68,
+      pendingCases: 24,
+      criticalEscalations: 5,
+      details: {
+        liveQueue: { waiting: 8, longestWait: '12m', agentsAvailable: 4 },
+        breakdown: { possessionDelay: 45, qualityIssues: 25, parking: 20, documents: 10 },
+        escalationQueue: [
+          { id: 'case-101', time: '52 hrs', issue: 'Possession delay' },
+          { id: 'case-105', time: '64 hrs', issue: 'Quality issue' }
+        ],
+        resolutionMix: { ai: 40, agent: 50, escalated: 10 },
+        sentimentTrend: 'Negative (Possession delays)'
+      }
+    },
+    {
+      id: 'ib-2',
+      title: 'Customer Support',
+      callsToday: 320,
+      resolutionRate: 85,
+      pendingCases: 12,
+      criticalEscalations: 2,
+      details: {
+        liveQueue: { waiting: 3, longestWait: '4m', agentsAvailable: 8 },
+        breakdown: { possessionDelay: 10, qualityIssues: 15, parking: 15, documents: 60 },
+        escalationQueue: [],
+        resolutionMix: { ai: 70, agent: 25, escalated: 5 },
+        sentimentTrend: 'Neutral'
+      }
+    },
+    {
+      id: 'ib-3',
+      title: 'Enquiry',
+      callsToday: 775,
+      resolutionRate: 92,
+      pendingCases: 0,
+      criticalEscalations: 0,
+      details: {
+        liveQueue: { waiting: 15, longestWait: '5m', agentsAvailable: 12 },
+        breakdown: { possessionDelay: 5, qualityIssues: 5, parking: 40, documents: 50 },
+        escalationQueue: [],
+        resolutionMix: { ai: 85, agent: 12, escalated: 3 },
+        sentimentTrend: 'Positive'
+      }
+    }
+  ],
+  outbound: [
+    {
+      id: 'ob-1',
+      title: 'Pre-sales',
+      callsMade: 1200,
+      connectRate: 45,
+      conversions: 18,
+      details: {
+        stats: { total: 1200, reached: 540, failed: 660 },
+        metrics: { siteVisits: 18, dropped: 522 },
+        aiInsights: 'High interest in 3BHK Atelier Greens',
+        leadQuality: 78
+      }
+    },
+    {
+      id: 'ob-2',
+      title: 'Payment',
+      callsMade: 850,
+      connectRate: 62,
+      conversions: 24,
+      details: {
+        stats: { total: 850, reached: 527, failed: 323 },
+        metrics: { collection: '1.2 Cr', dropped: 10 },
+        aiInsights: 'Most customers prefer long-term EMIs',
+        leadQuality: 85
+      }
+    },
+    {
+      id: 'ob-3',
+      title: 'Offers',
+      callsMade: 1450,
+      connectRate: 38,
+      conversions: 35,
+      details: {
+        stats: { total: 1450, reached: 551, failed: 899 },
+        metrics: { siteVisits: 35, dropped: 516 },
+        aiInsights: 'Festive offer connect is highest in Pune region',
+        leadQuality: 62
+      }
+    }
+  ]
+};
+
+export const mockRecentCalls = [
+  { id: 'call-1', customer: 'Amit Shah', issue: 'Possession delay', duration: '05:22', status: 'Resolved', sentiment: '🙂' },
+  { id: 'call-2', customer: 'Sunita Rao', issue: 'Quality issue', duration: '08:45', status: 'Escalated', sentiment: '😐' },
+  { id: 'call-3', customer: 'Rajesh Kumar', issue: 'Parking allocation', duration: '03:15', status: 'In Progress', sentiment: '🙂' },
+  { id: 'call-4', customer: 'Priya Verma', issue: 'Document missing', duration: '12:10', status: 'Resolved', sentiment: '😐' },
+  { id: 'call-5', customer: 'Karan Singh', issue: 'Payment query', duration: '04:30', status: 'Resolved', sentiment: '🙂' },
+];

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Radio, 
   MessageSquare, 
@@ -11,10 +12,25 @@ import {
   Send,
   Sparkles,
   Zap,
-  CheckCircle2
+  CheckCircle2,
+  PhoneIncoming,
+  PhoneOutgoing,
+  BarChart3,
+  Target,
+  Clock,
+  ArrowUpRight,
+  PieChart,
+  BrainCircuit,
+  Activity,
+  ChevronDown,
+  ChevronUp,
+  ChevronRight,
+  LayoutDashboard,
+  Layers,
+  Search
 } from 'lucide-react';
 import AppShell from '../components/layout/AppShell';
-import { supervisorAgents, supervisorKpis } from '../data/mockData';
+import { supervisorAgents, supervisorKpis, campaignData } from '../data/mockData';
 
 const kpiCards = [
   { label: 'Active Calls', value: supervisorKpis.activeCalls },
@@ -45,6 +61,10 @@ const SupervisorDashboard = () => {
   // Real-time Agent Data (for demo updates)
   const [agentsData, setAgentsData] = useState(supervisorAgents);
   
+  // Navigation State
+  const [activeView, setActiveView] = useState('agent'); // 'agent' | 'campaign'
+  const navigate = useNavigate();
+
   // Reaction States
   const [isAdapting, setIsAdapting] = useState(false);
   const [lastWhisperReaction, setLastWhisperReaction] = useState(null);
@@ -138,7 +158,47 @@ const SupervisorDashboard = () => {
   const targetAgentInfo = agentsData.find(a => a.id === targetAgentId);
 
   return (
-    <AppShell title="Live Command Center">
+    <AppShell title={activeView === 'agent' ? "Live Command Center" : "Campaign Intelligence"}>
+      {/* View Toggle */}
+      <div className="mb-6 flex justify-start">
+        <div className="bg-slate-100 p-1 rounded-xl flex gap-1 shadow-inner">
+          <button
+            onClick={() => setActiveView('agent')}
+            className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all ${
+              activeView === 'agent' 
+              ? 'bg-white text-[#0A2C5E] shadow-sm ring-1 ring-slate-200' 
+              : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            <Users size={16} />
+            Agent View
+          </button>
+          <button
+            onClick={() => setActiveView('campaign')}
+            className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all ${
+              activeView === 'campaign' 
+              ? 'bg-white text-[#0A2C5E] shadow-sm ring-1 ring-slate-200' 
+              : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            <Layers size={16} />
+            Campaign View
+          </button>
+        </div>
+        {activeView === 'campaign' && (
+          <div className="flex items-center gap-4 ml-auto">
+            <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-full">
+              <div className="h-2 w-2 bg-emerald-500 rounded-full animate-pulse" />
+              <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Live Feed</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+              <Clock size={12} />
+              Last Sync: Just Now
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Toast Container */}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
         {toasts.map(t => (
@@ -217,257 +277,413 @@ const SupervisorDashboard = () => {
 
       {/* KPI Overview */}
       <section className={`grid grid-cols-4 gap-4 mb-8 transition-all duration-500 ${activeIntervention ? 'opacity-40 grayscale-[0.5] pointer-events-none scale-95' : 'opacity-100'}`}>
-        {kpiCards.map((card) => (
-          <article key={card.label} className="rounded-2xl bg-white p-5 shadow-sm border border-slate-100 group hover:shadow-md transition-all">
-            <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400">{card.label}</p>
-            <div className="flex items-end justify-between mt-2">
-              <p className="text-3xl font-bold text-[#0A2C5E]">{card.value}</p>
-              <div className="h-2 w-12 rounded-full bg-slate-50 overflow-hidden">
-                <div className="h-full w-2/3 bg-[#0A2C5E] opacity-20" />
+        {activeView === 'agent' ? (
+          kpiCards.map((card) => (
+            <article key={card.label} className="rounded-2xl bg-white p-5 shadow-sm border border-slate-100 group hover:shadow-md transition-all">
+              <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400">{card.label}</p>
+              <div className="flex items-end justify-between mt-2">
+                <p className="text-3xl font-bold text-[#0A2C5E]">{card.value}</p>
+                <div className="h-2 w-12 rounded-full bg-slate-50 overflow-hidden">
+                  <div className="h-full w-2/3 bg-[#0A2C5E] opacity-20" />
+                </div>
               </div>
-            </div>
-          </article>
-        ))}
+            </article>
+          ))
+        ) : (
+          <>
+            {[
+              { label: 'Total Inbound Calls', value: campaignData.kpis.totalInbound, icon: <PhoneIncoming className="text-blue-600" size={16} /> },
+              { label: 'Total Outbound Calls', value: campaignData.kpis.totalOutbound, icon: <PhoneOutgoing className="text-purple-600" size={16} /> },
+              { label: 'Site Visits Booked', value: campaignData.kpis.siteVisitsBooked, icon: <Target className="text-emerald-600" size={16} /> },
+              { label: 'Active Campaigns', value: campaignData.kpis.activeCampaigns, icon: <Activity className="text-amber-600" size={16} /> },
+            ].map((card) => (
+              <article key={card.label} className="rounded-2xl bg-white p-5 shadow-sm border border-slate-100 group hover:shadow-md transition-all">
+                <div className="flex justify-between items-start">
+                  <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400">{card.label}</p>
+                  {card.icon}
+                </div>
+                <div className="flex items-end justify-between mt-2">
+                  <p className="text-3xl font-bold text-[#0A2C5E]">{card.value}</p>
+                  <div className="h-1 w-12 rounded-full bg-slate-50 overflow-hidden">
+                    <div className="h-full w-4/5 bg-[#0A2C5E] opacity-10" />
+                  </div>
+                </div>
+              </article>
+            ))}
+          </>
+        )}
       </section>
 
-      <div className="grid grid-cols-1 gap-6">
-        <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-          <Radio size={20} className="text-[#D71920]" />
-          Real-Time Floor Map
-        </h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {agentsData.map((agent) => {
-            const isTarget = targetAgentId === agent.id;
-            const otherActive = activeIntervention && !isTarget;
-            const cardMode = isTarget ? activeIntervention : null;
-            
-            return (
-              <article
-                key={agent.id}
-                onClick={() => !activeIntervention && setSelectedAgent(agent)}
-                className={`group relative rounded-2xl border-2 transition-all duration-300 overflow-hidden shadow-sm ${
-                  cardMode === 'barge' ? 'border-rose-500 bg-rose-50/50 shadow-rose-200 shadow-xl scale-[1.02] z-20' :
-                  cardMode === 'whisper' ? 'border-amber-400 bg-amber-50 shadow-amber-200 shadow-2xl scale-[1.05] z-20' :
-                  cardMode === 'monitor' ? 'border-blue-500 bg-blue-50 shadow-blue-200 shadow-2xl scale-105 z-20' :
-                  otherActive ? 'opacity-40 blur-[1px] border-slate-100 grayscale-[0.4] scale-95' :
-                  agent.alert ? 'border-rose-300 bg-white shadow-lg cursor-pointer' : 'border-slate-100 bg-white hover:border-slate-300 cursor-pointer'
-                }`}
-              >
-                {/* Visual Status Indicator */}
-                {cardMode === 'monitor' && <div className="absolute top-0 inset-x-0 h-1.5 bg-blue-500 animate-pulse" />}
-                {cardMode === 'whisper' && <div className="absolute top-0 inset-x-0 h-1.5 bg-amber-500 animate-pulse" />}
-                {cardMode === 'barge' && <div className="absolute top-0 inset-x-0 h-1.5 bg-rose-500 animate-pulse" />}
+      {activeView === 'agent' ? (
+        <div className="grid grid-cols-1 gap-6">
+          <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+            <Radio size={20} className="text-[#D71920]" />
+            Real-Time Floor Map
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {agentsData.map((agent) => {
+              const isTarget = targetAgentId === agent.id;
+              const otherActive = activeIntervention && !isTarget;
+              const cardMode = isTarget ? activeIntervention : null;
+              
+              return (
+                <article
+                  key={agent.id}
+                  onClick={() => !activeIntervention && setSelectedAgent(agent)}
+                  className={`group relative rounded-2xl border-2 transition-all duration-300 overflow-hidden shadow-sm ${
+                    cardMode === 'barge' ? 'border-rose-500 bg-rose-50/50 shadow-rose-200 shadow-xl scale-[1.02] z-20' :
+                    cardMode === 'whisper' ? 'border-amber-400 bg-amber-50 shadow-amber-200 shadow-2xl scale-[1.05] z-20' :
+                    cardMode === 'monitor' ? 'border-blue-500 bg-blue-50 shadow-blue-200 shadow-2xl scale-105 z-20' :
+                    otherActive ? 'opacity-40 blur-[1px] border-slate-100 grayscale-[0.4] scale-95' :
+                    agent.alert ? 'border-rose-300 bg-white shadow-lg cursor-pointer' : 'border-slate-100 bg-white hover:border-slate-300 cursor-pointer'
+                  }`}
+                >
+                  {/* Visual Status Indicator */}
+                  {cardMode === 'monitor' && <div className="absolute top-0 inset-x-0 h-1.5 bg-blue-500 animate-pulse" />}
+                  {cardMode === 'whisper' && <div className="absolute top-0 inset-x-0 h-1.5 bg-amber-500 animate-pulse" />}
+                  {cardMode === 'barge' && <div className="absolute top-0 inset-x-0 h-1.5 bg-rose-500 animate-pulse" />}
 
-                {/* Alert Ribbon */}
-                {agent.alert && !cardMode && (
-                  <div className="bg-rose-500 px-4 py-1.5 flex items-center justify-between text-white">
-                    <div className="flex items-center gap-2">
-                      <AlertCircle size={14} />
-                      <span className="text-[10px] font-bold uppercase tracking-wider">Critical Deviation</span>
+                  {/* Alert Ribbon */}
+                  {agent.alert && !cardMode && (
+                    <div className="bg-rose-500 px-4 py-1.5 flex items-center justify-between text-white">
+                      <div className="flex items-center gap-2">
+                        <AlertCircle size={14} />
+                        <span className="text-[10px] font-bold uppercase tracking-wider">Critical Deviation</span>
+                      </div>
+                      <span className="text-[10px] font-bold bg-white/20 px-1.5 rounded">HIGH RISK</span>
                     </div>
-                    <span className="text-[10px] font-bold bg-white/20 px-1.5 rounded">HIGH RISK</span>
-                  </div>
-                )}
+                  )}
 
-                <div className="p-5">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="text-lg font-bold text-[#0A2C5E] group-hover:text-[#D71920] transition-colors">{agent.name}</h3>
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-tighter mt-0.5">{agent.status} • {agent.duration}</p>
+                  <div className="p-5">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="text-lg font-bold text-[#0A2C5E] group-hover:text-[#D71920] transition-colors">{agent.name}</h3>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-tighter mt-0.5">{agent.status} • {agent.duration}</p>
+                      </div>
+                      <div className={`rounded-full px-2 py-1 text-[10px] font-black uppercase ${
+                        agent.sentiment === 'Positive' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'
+                      }`}>
+                        {agent.sentiment}
+                      </div>
                     </div>
-                    <div className={`rounded-full px-2 py-1 text-[10px] font-black uppercase ${
-                      agent.sentiment === 'Positive' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'
-                    }`}>
-                      {agent.sentiment}
-                    </div>
-                  </div>
 
-                  {/* AI Pulse / Whisper Feedback */}
-                  {cardMode === 'whisper' ? (
-                     <div className="space-y-4 mb-4 animate-in fade-in zoom-in-95 duration-500">
-                        {/* Status Message */}
-                        <div className={`rounded-xl px-3 py-2 flex items-center gap-3 transition-colors ${
-                          isAdapting ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
-                        }`}>
-                          {isAdapting ? <Sparkles size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
-                          <span className="text-[11px] font-bold">
-                            {isAdapting ? "Agent adapting response..." : "Agent improved response based on coaching"}
+                    {/* AI Pulse / Whisper Feedback */}
+                    {cardMode === 'whisper' ? (
+                      <div className="space-y-4 mb-4 animate-in fade-in zoom-in-95 duration-500">
+                          {/* Status Message */}
+                          <div className={`rounded-xl px-3 py-2 flex items-center gap-3 transition-colors ${
+                            isAdapting ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
+                          }`}>
+                            {isAdapting ? <Sparkles size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
+                            <span className="text-[11px] font-bold">
+                              {isAdapting ? "Agent adapting response..." : "Agent improved response based on coaching"}
+                            </span>
+                          </div>
+                          
+                          {/* Reaction Transcript */}
+                          {lastWhisperReaction && (
+                            <div className="bg-white border border-amber-100 rounded-xl p-3 shadow-inner italic">
+                              <div className="flex items-center gap-2 mb-1">
+                                <Radio size={10} className="text-blue-400" />
+                                <span className="text-[9px] font-black text-slate-400 uppercase">Live Output</span>
+                              </div>
+                              <p className="text-[11px] text-slate-600 leading-relaxed font-medium">"{lastWhisperReaction}"</p>
+                            </div>
+                          )}
+
+                          {/* Whisper History */}
+                          <div className="space-y-1.5 max-h-32 overflow-y-auto pr-1">
+                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-1">Session Guidance</p>
+                            {whisperHistory.map((m, i) => (
+                              <div key={i} className="bg-amber-600 text-white text-[10px] px-3 py-2 rounded-xl rounded-tr-none ml-6 font-medium shadow-sm">
+                                {m}
+                              </div>
+                            ))}
+                          </div>
+                      </div>
+                    ) : cardMode === 'monitor' ? (
+                      <div className="bg-blue-600 rounded-xl p-3 mb-4 text-white shadow-inner animate-in fade-in duration-500">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <Radio size={12} className="animate-pulse" />
+                              <span className="text-[10px] font-bold tracking-widest uppercase">Live Transcript</span>
+                            </div>
+                            <div className="flex gap-0.5">
+                              <div className="w-0.5 h-3 bg-white/40 animate-[bounce_1s_infinite_0ms]" />
+                              <div className="w-0.5 h-4 bg-white animate-[bounce_1.2s_infinite_200ms]" />
+                              <div className="w-0.5 h-2 bg-white/60 animate-[bounce_0.8s_infinite_400ms]" />
+                            </div>
+                          </div>
+                          <div className="space-y-1 mt-2">
+                            <p className="text-[8px] font-bold text-blue-200 uppercase tracking-wider">
+                              {mockTranscripts[transcriptIndex].speaker}
+                            </p>
+                            <p className="text-xs font-medium leading-relaxed animate-in slide-in-from-bottom-1">
+                              "{mockTranscripts[transcriptIndex].text}"
+                            </p>
+                          </div>
+                      </div>
+                    ) : (
+                      <div className="bg-slate-50 rounded-xl p-3 mb-4 border border-slate-100">
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <Sparkles size={12} className="text-[#0A2C5E]" />
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Live AI Insight {agent.alert ? "🔴" : "🟢"}</span>
+                        </div>
+                        <p className="text-xs text-slate-700 font-medium leading-relaxed italic">
+                          {agent.alert ? "Customer raised pricing objection. Agent is struggling to pivot to value-prop." : "Customer is showing high intent. Guide agent to confirm site visit."}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Progress & Risk */}
+                    <div className="space-y-3 mb-6">
+                      <div>
+                        <div className="flex justify-between text-[10px] font-bold text-slate-400 mb-1 uppercase">
+                          <span>Script Adherence</span>
+                          <span className={`transition-colors duration-1000 ${isTarget ? 'text-[#D71920]' : 'text-[#0A2C5E]'}`}>
+                            {agent.scriptScore}%
                           </span>
                         </div>
-                        
-                        {/* Reaction Transcript */}
-                        {lastWhisperReaction && (
-                           <div className="bg-white border border-amber-100 rounded-xl p-3 shadow-inner italic">
-                             <div className="flex items-center gap-2 mb-1">
-                               <Radio size={10} className="text-blue-400" />
-                               <span className="text-[9px] font-black text-slate-400 uppercase">Live Output</span>
-                             </div>
-                             <p className="text-[11px] text-slate-600 leading-relaxed font-medium">"{lastWhisperReaction}"</p>
-                           </div>
-                        )}
-
-                        {/* Whisper History */}
-                        <div className="space-y-1.5 max-h-32 overflow-y-auto pr-1">
-                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-1">Session Guidance</p>
-                          {whisperHistory.map((m, i) => (
-                            <div key={i} className="bg-amber-600 text-white text-[10px] px-3 py-2 rounded-xl rounded-tr-none ml-6 font-medium shadow-sm">
-                              {m}
-                            </div>
-                          ))}
+                        <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                          <div className={`h-full transition-all duration-[1500ms] ease-out ${
+                            cardMode === 'whisper' ? 'bg-amber-500' : 
+                            cardMode === 'monitor' ? 'bg-blue-500' : 
+                            'bg-[#0A2C5E]'
+                          }`} style={{ width: `${agent.scriptScore}%` }} />
                         </div>
-                     </div>
-                  ) : cardMode === 'monitor' ? (
-                     <div className="bg-blue-600 rounded-xl p-3 mb-4 text-white shadow-inner animate-in fade-in duration-500">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                             <Radio size={12} className="animate-pulse" />
-                             <span className="text-[10px] font-bold tracking-widest uppercase">Live Transcript</span>
-                          </div>
-                          <div className="flex gap-0.5">
-                            <div className="w-0.5 h-3 bg-white/40 animate-[bounce_1s_infinite_0ms]" />
-                            <div className="w-0.5 h-4 bg-white animate-[bounce_1.2s_infinite_200ms]" />
-                            <div className="w-0.5 h-2 bg-white/60 animate-[bounce_0.8s_infinite_400ms]" />
-                          </div>
-                        </div>
-                        <div className="space-y-1 mt-2">
-                          <p className="text-[8px] font-bold text-blue-200 uppercase tracking-wider">
-                            {mockTranscripts[transcriptIndex].speaker}
-                          </p>
-                          <p className="text-xs font-medium leading-relaxed animate-in slide-in-from-bottom-1">
-                            "{mockTranscripts[transcriptIndex].text}"
-                          </p>
-                        </div>
-                     </div>
-                  ) : (
-                    <div className="bg-slate-50 rounded-xl p-3 mb-4 border border-slate-100">
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <Sparkles size={12} className="text-[#0A2C5E]" />
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Live AI Insight {agent.alert ? "🔴" : "🟢"}</span>
-                      </div>
-                      <p className="text-xs text-slate-700 font-medium leading-relaxed italic">
-                        {agent.alert ? "Customer raised pricing objection. Agent is struggling to pivot to value-prop." : "Customer is showing high intent. Guide agent to confirm site visit."}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Progress & Risk */}
-                  <div className="space-y-3 mb-6">
-                    <div>
-                      <div className="flex justify-between text-[10px] font-bold text-slate-400 mb-1 uppercase">
-                        <span>Script Adherence</span>
-                        <span className={`transition-colors duration-1000 ${isTarget ? 'text-[#D71920]' : 'text-[#0A2C5E]'}`}>
-                          {agent.scriptScore}%
-                        </span>
-                      </div>
-                      <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                        <div className={`h-full transition-all duration-[1500ms] ease-out ${
-                          cardMode === 'whisper' ? 'bg-amber-500' : 
-                          cardMode === 'monitor' ? 'bg-blue-500' : 
-                          'bg-[#0A2C5E]'
-                        }`} style={{ width: `${agent.scriptScore}%` }} />
                       </div>
                     </div>
-                  </div>
 
-                  {/* Intervention Controls */}
-                  <div className="grid grid-cols-3 gap-2" onClick={(e) => e.stopPropagation()}>
-                    <button
-                      disabled={activeIntervention && !isTarget}
-                      onClick={() => handleIntervention('monitor', agent.id, agent.name)}
-                      className={`flex flex-col items-center gap-1.5 rounded-xl py-2 transition-all ${
-                        cardMode === 'monitor' ? 'bg-blue-600 text-white shadow-blue-300 shadow-md ring-2 ring-white/20' : 
-                        activeIntervention && !isTarget ? 'bg-slate-50 text-slate-300 cursor-not-allowed opacity-0' :
-                        'bg-blue-50 text-blue-700 hover:bg-blue-100'
-                      }`}
-                    >
-                      <Radio size={16} />
-                      <span className="text-[9px] font-bold uppercase">Monitor</span>
-                    </button>
-                    <button
-                      disabled={activeIntervention && !isTarget}
-                      onClick={() => handleIntervention('whisper', agent.id, agent.name)}
-                      className={`flex flex-col items-center gap-1.5 rounded-xl py-2 transition-all ${
-                        cardMode === 'whisper' ? 'bg-amber-500 text-white shadow-amber-300 shadow-md ring-2 ring-white/20' : 
-                        activeIntervention && !isTarget ? 'bg-slate-50 text-slate-300 cursor-not-allowed opacity-0' :
-                        'bg-amber-50 text-amber-700 hover:bg-amber-100'
-                      }`}
-                    >
-                      <MessageSquare size={16} />
-                      <span className="text-[9px] font-bold uppercase">Whisper</span>
-                    </button>
-                    <button
-                      disabled={activeIntervention && !isTarget}
-                      onClick={() => handleIntervention('barge', agent.id, agent.name)}
-                      className={`flex flex-col items-center gap-1.5 rounded-xl py-2 transition-all ${
-                        cardMode === 'barge' ? 'bg-rose-600 text-white shadow-rose-300 shadow-md ring-2 ring-white/20' : 
-                        activeIntervention && !isTarget ? 'bg-slate-50 text-slate-300 cursor-not-allowed opacity-0' :
-                        'bg-rose-50 text-rose-700 hover:bg-rose-100'
-                      }`}
-                    >
-                      <Users size={16} />
-                      <span className="text-[9px] font-bold uppercase">Barge</span>
-                    </button>
-                  </div>
-
-                  {/* Contextual Input/Controls */}
-                  {cardMode === 'whisper' && (
-                    <div className="mt-4 animate-in zoom-in-95" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex gap-2">
-                        <input 
-                          type="text" 
-                          placeholder="Type whisper guide..."
-                          value={whisperText}
-                          onChange={(e) => setWhisperText(e.target.value)}
-                          onKeyDown={(e) => e.key === 'Enter' && sendWhisper(agent.name)}
-                          className="flex-1 rounded-xl bg-white border-amber-200 px-3 py-2 text-xs focus:ring-1 focus:ring-amber-500 focus:outline-none"
-                        />
-                        <button 
-                          onClick={() => sendWhisper(agent.name)}
-                          className="rounded-xl bg-amber-500 p-2 text-white shadow-sm hover:bg-amber-600 transition-colors"
-                        >
-                          <Send size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {cardMode === 'barge' && (
-                    <div className="mt-4 flex gap-2 animate-in zoom-in-95" onClick={(e) => e.stopPropagation()}>
-                      <button 
-                        onClick={() => setIsMuted(!isMuted)}
-                        className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-2 text-[10px] font-bold uppercase transition-all ${
-                          isMuted ? 'bg-slate-200 text-slate-500' : 'bg-rose-100 text-rose-700'
+                    {/* Intervention Controls */}
+                    <div className="grid grid-cols-3 gap-2" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        disabled={activeIntervention && !isTarget}
+                        onClick={() => handleIntervention('monitor', agent.id, agent.name)}
+                        className={`flex flex-col items-center gap-1.5 rounded-xl py-2 transition-all ${
+                          cardMode === 'monitor' ? 'bg-blue-600 text-white shadow-blue-300 shadow-md ring-2 ring-white/20' : 
+                          activeIntervention && !isTarget ? 'bg-slate-50 text-slate-300 cursor-not-allowed opacity-0' :
+                          'bg-blue-50 text-blue-700 hover:bg-blue-100'
                         }`}
                       >
-                        {isMuted ? <MicOff size={14} /> : <Mic size={14} />}
-                        {isMuted ? "Unmute self" : "Mic On"}
+                        <Radio size={16} />
+                        <span className="text-[9px] font-bold uppercase">Monitor</span>
                       </button>
-                      <button 
-                        onClick={stopIntervention}
-                        className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-slate-800 py-2 text-[10px] font-bold uppercase text-white shadow-md transition-all active:scale-95"
+                      <button
+                        disabled={activeIntervention && !isTarget}
+                        onClick={() => handleIntervention('whisper', agent.id, agent.name)}
+                        className={`flex flex-col items-center gap-1.5 rounded-xl py-2 transition-all ${
+                          cardMode === 'whisper' ? 'bg-amber-500 text-white shadow-amber-300 shadow-md ring-2 ring-white/20' : 
+                          activeIntervention && !isTarget ? 'bg-slate-50 text-slate-300 cursor-not-allowed opacity-0' :
+                          'bg-amber-50 text-amber-700 hover:bg-amber-100'
+                        }`}
                       >
-                        <LogOut size={14} /> Leave Call
+                        <MessageSquare size={16} />
+                        <span className="text-[9px] font-bold uppercase">Whisper</span>
+                      </button>
+                      <button
+                        disabled={activeIntervention && !isTarget}
+                        onClick={() => handleIntervention('barge', agent.id, agent.name)}
+                        className={`flex flex-col items-center gap-1.5 rounded-xl py-2 transition-all ${
+                          cardMode === 'barge' ? 'bg-rose-600 text-white shadow-rose-300 shadow-md ring-2 ring-white/20' : 
+                          activeIntervention && !isTarget ? 'bg-slate-50 text-slate-300 cursor-not-allowed opacity-0' :
+                          'bg-rose-50 text-rose-700 hover:bg-rose-100'
+                        }`}
+                      >
+                        <Users size={16} />
+                        <span className="text-[9px] font-bold uppercase">Barge</span>
                       </button>
                     </div>
-                  )}
-                </div>
-                
-                {/* Glow Overlay for Active State */}
-                {isTarget && (
-                  <div className={`absolute top-0 right-0 p-2 animate-pulse`}>
-                    <div className={`h-2.5 w-2.5 rounded-full ${
-                      cardMode === 'barge' ? 'bg-rose-500 shadow-[0_0_12px_#f43f5e]' :
-                      cardMode === 'whisper' ? 'bg-amber-500 shadow-[0_0_12px_#f59e0b]' :
-                      'bg-blue-500 shadow-[0_0_12px_#3b82f6]'
-                    }`} />
+
+                    {/* Contextual Input/Controls */}
+                    {cardMode === 'whisper' && (
+                      <div className="mt-4 animate-in zoom-in-95" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex gap-2">
+                          <input 
+                            type="text" 
+                            placeholder="Type whisper guide..."
+                            value={whisperText}
+                            onChange={(e) => setWhisperText(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && sendWhisper(agent.name)}
+                            className="flex-1 rounded-xl bg-white border-amber-200 px-3 py-2 text-xs focus:ring-1 focus:ring-amber-500 focus:outline-none"
+                          />
+                          <button 
+                            onClick={() => sendWhisper(agent.name)}
+                            className="rounded-xl bg-amber-500 p-2 text-white shadow-sm hover:bg-amber-600 transition-colors"
+                          >
+                            <Send size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {cardMode === 'barge' && (
+                      <div className="mt-4 flex gap-2 animate-in zoom-in-95" onClick={(e) => e.stopPropagation()}>
+                        <button 
+                          onClick={() => setIsMuted(!isMuted)}
+                          className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-2 text-[10px] font-bold uppercase transition-all ${
+                            isMuted ? 'bg-slate-200 text-slate-500' : 'bg-rose-100 text-rose-700'
+                          }`}
+                        >
+                          {isMuted ? <MicOff size={14} /> : <Mic size={14} />}
+                          {isMuted ? "Unmute self" : "Mic On"}
+                        </button>
+                        <button 
+                          onClick={stopIntervention}
+                          className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-slate-800 py-2 text-[10px] font-bold uppercase text-white shadow-md transition-all active:scale-95"
+                        >
+                          <LogOut size={14} /> Leave Call
+                        </button>
+                      </div>
+                    )}
                   </div>
-                )}
-              </article>
-            );
-          })}
+                  
+                  {/* Glow Overlay for Active State */}
+                  {isTarget && (
+                    <div className={`absolute top-0 right-0 p-2 animate-pulse`}>
+                      <div className={`h-2.5 w-2.5 rounded-full ${
+                        cardMode === 'barge' ? 'bg-rose-500 shadow-[0_0_12px_#f43f5e]' :
+                        cardMode === 'whisper' ? 'bg-amber-500 shadow-[0_0_12px_#f59e0b]' :
+                        'bg-blue-500 shadow-[0_0_12px_#3b82f6]'
+                      }`} />
+                    </div>
+                  )}
+                </article>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      ) : (
+        /* CAMPAIGN VIEW LAYOUT */
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+          {/* INBOUND COLUMN */}
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-blue-900 flex items-center gap-2">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <PhoneIncoming size={20} className="text-blue-600" />
+                </div>
+                Inbound Campaigns
+              </h2>
+              <span className="text-[10px] font-black bg-blue-100 text-blue-700 px-2 py-1 rounded-full uppercase tracking-tighter">Live Status</span>
+            </div>
+
+            <div className="space-y-4">
+              {campaignData.inbound.map((campaign) => {
+                return (
+                  <div 
+                    key={campaign.id}
+                    onClick={() => navigate(`/campaigns/inbound/${campaign.id}`)}
+                    className="bg-white rounded-2xl border border-slate-100 hover:border-blue-200 transition-all duration-300 overflow-hidden cursor-pointer group hover:shadow-lg hover:shadow-blue-500/5 hover:-translate-y-1"
+                  >
+                    <div className="p-5">
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-center gap-3">
+                          <h3 className="text-lg font-bold text-slate-800">{campaign.title}</h3>
+                          {campaign.resolutionRate > 90 && (
+                            <span className="bg-emerald-100 text-emerald-700 text-[9px] font-black px-2 py-0.5 rounded-full uppercase flex items-center gap-1">
+                              Top Performer 🏆
+                            </span>
+                          )}
+                        </div>
+                        <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
+                          <ChevronRight size={18} />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-4 mt-4">
+                        <div className="p-3 bg-blue-50/50 rounded-xl">
+                          <p className="text-[9px] font-black text-blue-400 uppercase tracking-widest">Resolution</p>
+                          <p className="text-lg font-bold text-blue-700">{campaign.resolutionRate}%</p>
+                        </div>
+                        <div className="p-3 bg-slate-50 rounded-xl">
+                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Pending</p>
+                          <p className="text-lg font-bold text-slate-700">{campaign.pendingCases}</p>
+                        </div>
+                        <div className={`p-3 rounded-xl ${campaign.criticalEscalations > 0 ? 'bg-rose-50' : 'bg-slate-50'}`}>
+                          <p className={`text-[9px] font-black uppercase tracking-widest ${campaign.criticalEscalations > 0 ? 'text-rose-400' : 'text-slate-400'}`}>Critical</p>
+                          <p className={`text-lg font-bold ${campaign.criticalEscalations > 0 ? 'text-rose-600' : 'text-slate-700'}`}>{campaign.criticalEscalations}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-4 pt-4 border-t border-slate-50 flex items-center justify-between">
+                         <span className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1">
+                           <Activity size={10} /> {campaign.callsToday} Calls Today
+                         </span>
+                         <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">View Operational Details</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* OUTBOUND COLUMN */}
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-purple-900 flex items-center gap-2">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <PhoneOutgoing size={20} className="text-purple-600" />
+                </div>
+                Outbound Campaigns
+              </h2>
+              <span className="text-[10px] font-black bg-purple-100 text-purple-700 px-2 py-1 rounded-full uppercase tracking-tighter">Live Status</span>
+            </div>
+
+            <div className="space-y-4">
+              {campaignData.outbound.map((campaign) => {
+                return (
+                  <div 
+                    key={campaign.id}
+                    onClick={() => navigate(`/campaigns/outbound/${campaign.id}`)}
+                    className="bg-white rounded-2xl border border-slate-100 hover:border-purple-200 transition-all duration-300 overflow-hidden cursor-pointer group hover:shadow-lg hover:shadow-purple-500/5 hover:-translate-y-1"
+                  >
+                    <div className="p-5">
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-center gap-3">
+                          <h3 className="text-lg font-bold text-slate-800">{campaign.title}</h3>
+                          {campaign.conversions > 30 && (
+                            <span className="bg-emerald-100 text-emerald-700 text-[9px] font-black px-2 py-0.5 rounded-full uppercase flex items-center gap-1">
+                               High Efficiency 🚀
+                            </span>
+                          )}
+                        </div>
+                        <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-purple-50 group-hover:text-purple-500 transition-colors">
+                          <ChevronRight size={18} />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4 mt-4">
+                        <div className={`p-3 rounded-xl ${campaign.connectRate < 50 ? 'bg-rose-50 ring-1 ring-rose-200' : 'bg-purple-50/50'}`}>
+                          <div className="flex justify-between items-center mb-0.5">
+                            <p className={`text-[9px] font-black uppercase tracking-widest ${campaign.connectRate < 50 ? 'text-rose-400' : 'text-purple-400'}`}>Connect Rate</p>
+                            {campaign.connectRate < 50 && <AlertCircle size={10} className="text-rose-500 animate-pulse" />}
+                          </div>
+                          <p className={`text-lg font-bold ${campaign.connectRate < 50 ? 'text-rose-600' : 'text-purple-700'}`}>{campaign.connectRate}%</p>
+                          {campaign.connectRate < 50 && <p className="text-[8px] font-bold text-rose-500 uppercase mt-0.5">Warning: Low Reach</p>}
+                        </div>
+                        <div className="p-3 bg-emerald-50 rounded-xl relative overflow-hidden group/conv">
+                          {campaign.conversions > 30 && <div className="absolute top-0 right-0 p-1"><Sparkles size={10} className="text-emerald-400" /></div>}
+                          <p className="text-[9px] font-black text-emerald-400 uppercase tracking-widest">Conversions</p>
+                          <p className="text-lg font-bold text-emerald-700">{campaign.conversions}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-4 pt-4 border-t border-slate-50 flex items-center justify-between">
+                         <span className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1">
+                           <Activity size={10} /> {campaign.callsMade} Calls Made
+                         </span>
+                         <span className="text-[10px] font-black text-purple-600 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Analyze Leads & Funnel</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Agent Details Modal (Placeholder same as before but uses local agentsData) */}
       {selectedAgent && (

@@ -546,86 +546,20 @@ const SupervisorDashboard = () => {
                     </div>
 
                     {/* Intervention Controls */}
-                    <div className="grid grid-cols-3 gap-2" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
                       <button
                         disabled={activeIntervention && !isTarget}
                         onClick={() => handleIntervention('monitor', agent.id, agent.name)}
-                        className={`flex flex-col items-center gap-1.5 rounded-xl py-2 transition-all ${
+                        className={`flex items-center justify-center gap-2 rounded-xl py-2.5 px-8 transition-all w-full ${
                           cardMode === 'monitor' ? 'bg-blue-600 text-white shadow-blue-300 shadow-md ring-2 ring-white/20' : 
                           activeIntervention && !isTarget ? 'bg-slate-50 text-slate-300 cursor-not-allowed opacity-0' :
                           'bg-blue-50 text-blue-700 hover:bg-blue-100'
                         }`}
                       >
                         <Radio size={16} />
-                        <span className="text-[9px] font-bold uppercase">Monitor</span>
-                      </button>
-                      <button
-                        disabled={activeIntervention && !isTarget}
-                        onClick={() => handleIntervention('whisper', agent.id, agent.name)}
-                        className={`flex flex-col items-center gap-1.5 rounded-xl py-2 transition-all ${
-                          cardMode === 'whisper' ? 'bg-amber-500 text-white shadow-amber-300 shadow-md ring-2 ring-white/20' : 
-                          activeIntervention && !isTarget ? 'bg-slate-50 text-slate-300 cursor-not-allowed opacity-0' :
-                          'bg-amber-50 text-amber-700 hover:bg-amber-100'
-                        }`}
-                      >
-                        <MessageSquare size={16} />
-                        <span className="text-[9px] font-bold uppercase">Whisper</span>
-                      </button>
-                      <button
-                        disabled={activeIntervention && !isTarget}
-                        onClick={() => handleIntervention('barge', agent.id, agent.name)}
-                        className={`flex flex-col items-center gap-1.5 rounded-xl py-2 transition-all ${
-                          cardMode === 'barge' ? 'bg-rose-600 text-white shadow-rose-300 shadow-md ring-2 ring-white/20' : 
-                          activeIntervention && !isTarget ? 'bg-slate-50 text-slate-300 cursor-not-allowed opacity-0' :
-                          'bg-rose-50 text-rose-700 hover:bg-rose-100'
-                        }`}
-                      >
-                        <Users size={16} />
-                        <span className="text-[9px] font-bold uppercase">Barge</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest">Monitor Live Session</span>
                       </button>
                     </div>
-
-                    {/* Contextual Input/Controls */}
-                    {cardMode === 'whisper' && (
-                      <div className="mt-4 animate-in zoom-in-95" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex gap-2">
-                          <input 
-                            type="text" 
-                            placeholder="Type whisper guide..."
-                            value={whisperText}
-                            onChange={(e) => setWhisperText(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && sendWhisper(agent.name)}
-                            className="flex-1 rounded-xl bg-white border-amber-200 px-3 py-2 text-xs focus:ring-1 focus:ring-amber-500 focus:outline-none"
-                          />
-                          <button 
-                            onClick={() => sendWhisper(agent.name)}
-                            className="rounded-xl bg-amber-500 p-2 text-white shadow-sm hover:bg-amber-600 transition-colors"
-                          >
-                            <Send size={16} />
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {cardMode === 'barge' && (
-                      <div className="mt-4 flex gap-2 animate-in zoom-in-95" onClick={(e) => e.stopPropagation()}>
-                        <button 
-                          onClick={() => setIsMuted(!isMuted)}
-                          className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-2 text-[10px] font-bold uppercase transition-all ${
-                            isMuted ? 'bg-slate-200 text-slate-500' : 'bg-rose-100 text-rose-700'
-                          }`}
-                        >
-                          {isMuted ? <MicOff size={14} /> : <Mic size={14} />}
-                          {isMuted ? "Unmute self" : "Mic On"}
-                        </button>
-                        <button 
-                          onClick={stopIntervention}
-                          className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-slate-800 py-2 text-[10px] font-bold uppercase text-white shadow-md transition-all active:scale-95"
-                        >
-                          <LogOut size={14} /> Leave Call
-                        </button>
-                      </div>
-                    )}
                   </div>
                   
                   {/* Glow Overlay for Active State */}

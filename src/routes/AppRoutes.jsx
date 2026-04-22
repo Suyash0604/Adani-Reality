@@ -5,6 +5,7 @@ import SupervisorDashboard from '../pages/SupervisorDashboard';
 import QAPage from '../pages/QAPage';
 import CallRecords from '../pages/CallRecords';
 import SalesforceMock from '../pages/SalesforceMock';
+import EscalationsPage from '../pages/EscalationsPage';
 import SecurityPanel from '../pages/SecurityPanel';
 import CampaignDetailInbound from '../pages/CampaignDetailInbound';
 import CampaignDetailOutbound from '../pages/CampaignDetailOutbound';
@@ -23,6 +24,7 @@ const AppRoutes = () => {
       <Route element={<ProtectedRoute allowedRoles={['agent', 'supervisor', 'admin']} />}>
         <Route path="/qa/:callId?" element={<QAPage />} />
         <Route path="/records" element={<CallRecords />} />
+        <Route path="/escalations" element={<EscalationsPage />} />
       </Route>
 
       <Route element={<ProtectedRoute allowedRoles={['supervisor']} />}>

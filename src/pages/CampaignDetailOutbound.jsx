@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
   Clock, 
@@ -19,7 +19,8 @@ import {
   Target
 } from 'lucide-react';
 import AppShell from '../components/layout/AppShell';
-import { campaignData } from '../data/mockData';
+import { useContext } from 'react';
+import { AppContext } from '../context/appContextObject';
 
 const AgentModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
@@ -85,13 +86,34 @@ const Toast = ({ show, message }) => {
   );
 };
 
-import CampaignPreSalesDetail from '../components/campaigns/CampaignPreSalesDetail';
-import CampaignPaymentDetail from '../components/campaigns/CampaignPaymentDetail';
-import CampaignOffersDetail from '../components/campaigns/CampaignOffersDetail';
+const GenericCampaignDetail = ({ campaign, triggerAction }) => {
+  return (
+    <div className="space-y-8 animate-in fade-in duration-700">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {[
+          { label: 'Connect Rate', value: `${campaign.connectRate}%`, icon: <Activity className="text-blue-600" size={20} /> },
+          { label: 'Conversions', value: campaign.conversions, icon: <Target className="text-emerald-600" size={20} /> },
+          { label: 'Calls Made', value: campaign.callsMade, icon: <Phone className="text-purple-600" size={20} /> },
+          { label: 'Success Ratio', value: campaign.callsMade > 0 ? `${Math.round((campaign.conversions / campaign.callsMade) * 100)}%` : '0%', icon: <PieChart className="text-amber-600" size={20} /> },
+        ].map((kpi, i) => (
+          <div key={i} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+            <div className="flex justify-between items-start mb-4">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{kpi.label}</span>
+              {kpi.icon}
+            </div>
+            <p className="text-3xl font-black text-[#0A2C5E]">{kpi.value}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 const CampaignDetailOutbound = () => {
   const { campaignId } = useParams();
-  const campaign = campaignData.outbound.find(c => c.id === campaignId);
+  const navigate = useNavigate();
+  const { outboundCampaigns } = useContext(AppContext);
+  const campaign = outboundCampaigns.find(c => c.id === campaignId);
   const [showAgents, setShowAgents] = React.useState(false);
   const [showToast, setShowToast] = React.useState(false);
 
@@ -123,15 +145,9 @@ const CampaignDetailOutbound = () => {
     return "Execute Outreach Action";
   };
 
-  // Determine which sub-view to render
+  // Standardized view for all outbound campaigns
   const renderDetailView = () => {
-    const props = { campaign, triggerAction };
-    switch (campaign.id) {
-      case 'ob-1': return <CampaignPreSalesDetail {...props} />;
-      case 'ob-2': return <CampaignPaymentDetail {...props} />;
-      case 'ob-3': return <CampaignOffersDetail {...props} />;
-      default: return null;
-    }
+    return <GenericCampaignDetail campaign={campaign} triggerAction={triggerAction} />;
   };
 
   return (
@@ -140,7 +156,7 @@ const CampaignDetailOutbound = () => {
       <nav className="flex items-center gap-2 mb-6">
         <Link to="/supervisor" className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-purple-600 transition-colors">Campaign</Link>
         <ChevronRight size={10} className="text-slate-300" />
-        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Outbound</span>
+        <Link to="/supervisor" className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-purple-600 transition-colors">Outbound</Link>
         <ChevronRight size={10} className="text-slate-300" />
         <span className="text-[10px] font-black text-[#0A2C5E] uppercase tracking-widest">{campaign.title}</span>
       </nav>
@@ -167,17 +183,11 @@ const CampaignDetailOutbound = () => {
           
           <div className="flex items-center gap-4">
             <button 
-              onClick={() => setShowAgents(true)}
-              className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-600 uppercase tracking-widest hover:bg-slate-50 transition-all"
+              onClick={() => navigate('/supervisor')}
+              className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-600 uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm"
             >
-              <Users size={14} />
-              View Active Agents
-            </button>
-            <button 
-              onClick={triggerAction}
-              className="px-6 py-3 bg-[#0A2C5E] text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-900/20 hover:-translate-y-0.5 transition-all active:scale-95"
-            >
-              {getActionLabel()}
+              <ArrowLeft size={14} />
+              Back to Dashboard
             </button>
           </div>
         </div>

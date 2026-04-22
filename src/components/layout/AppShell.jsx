@@ -11,7 +11,9 @@ import {
   User, 
   ChevronRight,
   Menu,
-  ChevronLeft
+  ChevronLeft,
+  ShieldAlert,
+  History
 } from 'lucide-react';
 import { useAuth } from '../../context/useAuth';
 
@@ -19,17 +21,16 @@ const navByRole = {
   agent: [
     { label: 'CRM', to: '/salesforce', icon: LayoutDashboard },
     { label: 'Agent Console', to: '/agent', icon: Phone },
-    { label: 'QA', to: '/qa', icon: BarChart3 },
-    { label: 'Call Records', to: '/records', icon: List },
+    { label: 'Call Records', to: '/records', icon: History },
   ],
   supervisor: [
     { label: 'Dashboard', to: '/supervisor', icon: LayoutDashboard },
-    { label: 'Call Records', to: '/records', icon: List },
-    { label: 'QA', to: '/qa', icon: BarChart3 },
+    { label: 'Call Intelligence', to: '/records', icon: History },
+    { label: 'Escalations', to: '/escalations', icon: ShieldAlert },
   ],
   admin: [
     { label: 'Security', to: '/admin', icon: Shield },
-    { label: 'Call Records', to: '/records', icon: List },
+    { label: 'Call Records', to: '/records', icon: History },
   ],
 };
 

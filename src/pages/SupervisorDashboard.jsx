@@ -31,6 +31,9 @@ import {
 } from 'lucide-react';
 import AppShell from '../components/layout/AppShell';
 import { supervisorAgents, supervisorKpis, campaignData } from '../data/mockData';
+import { Plus, Upload, Play, FileText, Check, Calendar, DollarSign, Home } from 'lucide-react';
+import { useContext } from 'react';
+import { AppContext } from '../context/appContextObject';
 
 const kpiCards = [
   { label: 'Active Calls', value: supervisorKpis.activeCalls },
@@ -60,10 +63,31 @@ const SupervisorDashboard = () => {
   
   // Real-time Agent Data (for demo updates)
   const [agentsData, setAgentsData] = useState(supervisorAgents);
-  
+
+  const { 
+    allProjects, 
+    outboundCampaigns, 
+    addProject, 
+    addCampaign, 
+    updateCampaignStatus,
+    supervisorView: activeView,
+    setSupervisorView: setActiveView
+  } = useContext(AppContext);
+
   // Navigation State
-  const [activeView, setActiveView] = useState('agent'); // 'agent' | 'campaign'
   const navigate = useNavigate();
+
+  // Modal State
+  const [showCreateProject, setShowCreateProject] = useState(false);
+  const [showCreateCampaign, setShowCreateCampaign] = useState(false);
+
+  // Form States
+  const [newProject, setNewProject] = useState({ 
+    name: '', 
+    location: '', 
+    file: null
+  });
+  const [newCampaign, setNewCampaign] = useState({ title: '', projectId: '', file: null });
 
   // Reaction States
   const [isAdapting, setIsAdapting] = useState(false);
@@ -157,6 +181,71 @@ const SupervisorDashboard = () => {
 
   const targetAgentInfo = agentsData.find(a => a.id === targetAgentId);
 
+  const downloadSample = () => {
+    const content = "Name,Mobile no\nJohn Doe,9876543210\nJane Smith,9123456789";
+    const blob = new Blob([content], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'campaign_sample.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+    addToast('Campaign sample downloaded', 'info');
+  };
+
+  const downloadProjectSample = () => {
+    const content = "Project Name,Location,Specifications,Unit Types,Total Area\nAdani Western Heights,Mumbai,Premium 4BHK,3/4 BHK,2500 sqft";
+    const blob = new Blob([content], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'project_template.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+    addToast('Project sample downloaded', 'info');
+  };
+
+  const handleCreateProject = (e) => {
+    e.preventDefault();
+    const id = `proj-${allProjects.length + 1}`;
+    addProject({ ...newProject, id });
+    setShowCreateProject(false);
+    setNewProject({ name: '', location: '', file: null });
+    addToast('Project created successfully', 'success');
+  };
+
+  const handleCreateCampaign = (e) => {
+    e.preventDefault();
+    const id = `ob-${outboundCampaigns.length + 1}`;
+    const project = allProjects.find(p => p.id === newCampaign.projectId);
+    const title = `${newCampaign.title} (${project?.name || 'General'})`;
+    
+    const newCamp = {
+      id,
+      title,
+      callsMade: 0,
+      connectRate: 0,
+      conversions: 0,
+      status: 'Ready',
+      details: {
+        stats: { total: 0, reached: 0, failed: 0 },
+        metrics: { siteVisits: 0, dropped: 0 },
+        aiInsights: 'Campaign ready to start',
+        leadQuality: 0
+      }
+    };
+    
+    addCampaign(newCamp);
+    setShowCreateCampaign(false);
+    setNewCampaign({ title: '', projectId: '', file: null });
+    addToast('Campaign launched successfully', 'success');
+  };
+
+  const startCalling = (campaignId) => {
+    updateCampaignStatus(campaignId, 'Calling', Math.floor(Math.random() * 10));
+    addToast('Dialer started for campaign', 'success');
+  };
+
   return (
     <AppShell title={activeView === 'agent' ? "Live Command Center" : "Campaign Intelligence"}>
       {/* View Toggle */}
@@ -186,14 +275,25 @@ const SupervisorDashboard = () => {
           </button>
         </div>
         {activeView === 'campaign' && (
-          <div className="flex items-center gap-4 ml-auto">
+          <div className="flex items-center gap-3 ml-auto">
+            <button
+              onClick={() => setShowCreateProject(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all shadow-sm"
+            >
+              <Plus size={14} className="text-[#D71920]" />
+              New Project
+            </button>
+            <button
+              onClick={() => setShowCreateCampaign(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-[#0A2C5E] rounded-xl text-xs font-bold text-white hover:bg-[#0c3875] transition-all shadow-md"
+            >
+              <Plus size={14} className="text-emerald-400" />
+              New Campaign
+            </button>
+            <div className="h-8 w-px bg-slate-200 mx-2" />
             <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-full">
               <div className="h-2 w-2 bg-emerald-500 rounded-full animate-pulse" />
               <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Live Feed</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-tight">
-              <Clock size={12} />
-              Last Sync: Just Now
             </div>
           </div>
         )}
@@ -317,8 +417,8 @@ const SupervisorDashboard = () => {
       {activeView === 'agent' ? (
         <div className="grid grid-cols-1 gap-6">
           <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-            <Radio size={20} className="text-[#D71920]" />
-            Real-Time Floor Map
+            <Activity size={20} className="text-[#0A2C5E]" />
+            Active Calls
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -331,12 +431,12 @@ const SupervisorDashboard = () => {
                 <article
                   key={agent.id}
                   onClick={() => !activeIntervention && setSelectedAgent(agent)}
-                  className={`group relative rounded-2xl border-2 transition-all duration-300 overflow-hidden shadow-sm ${
+                  className={`group bg-white rounded-2xl border transition-all duration-300 relative overflow-hidden ${
                     cardMode === 'barge' ? 'border-rose-500 bg-rose-50/50 shadow-rose-200 shadow-xl scale-[1.02] z-20' :
                     cardMode === 'whisper' ? 'border-amber-400 bg-amber-50 shadow-amber-200 shadow-2xl scale-[1.05] z-20' :
                     cardMode === 'monitor' ? 'border-blue-500 bg-blue-50 shadow-blue-200 shadow-2xl scale-105 z-20' :
                     otherActive ? 'opacity-40 blur-[1px] border-slate-100 grayscale-[0.4] scale-95' :
-                    agent.alert ? 'border-rose-300 bg-white shadow-lg cursor-pointer' : 'border-slate-100 bg-white hover:border-slate-300 cursor-pointer'
+                    'border-slate-100 hover:border-blue-200 shadow-sm cursor-pointer'
                   }`}
                 >
                   {/* Visual Status Indicator */}
@@ -344,16 +444,6 @@ const SupervisorDashboard = () => {
                   {cardMode === 'whisper' && <div className="absolute top-0 inset-x-0 h-1.5 bg-amber-500 animate-pulse" />}
                   {cardMode === 'barge' && <div className="absolute top-0 inset-x-0 h-1.5 bg-rose-500 animate-pulse" />}
 
-                  {/* Alert Ribbon */}
-                  {agent.alert && !cardMode && (
-                    <div className="bg-rose-500 px-4 py-1.5 flex items-center justify-between text-white">
-                      <div className="flex items-center gap-2">
-                        <AlertCircle size={14} />
-                        <span className="text-[10px] font-bold uppercase tracking-wider">Critical Deviation</span>
-                      </div>
-                      <span className="text-[10px] font-bold bg-white/20 px-1.5 rounded">HIGH RISK</span>
-                    </div>
-                  )}
 
                   <div className="p-5">
                     <div className="flex justify-between items-start mb-4">
@@ -428,7 +518,7 @@ const SupervisorDashboard = () => {
                       <div className="bg-slate-50 rounded-xl p-3 mb-4 border border-slate-100">
                         <div className="flex items-center gap-2 mb-1.5">
                           <Sparkles size={12} className="text-[#0A2C5E]" />
-                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Live AI Insight {agent.alert ? "🔴" : "🟢"}</span>
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Live AI Insight</span>
                         </div>
                         <p className="text-xs text-slate-700 font-medium leading-relaxed italic">
                           {agent.alert ? "Customer raised pricing objection. Agent is struggling to pivot to value-prop." : "Customer is showing high intent. Guide agent to confirm site visit."}
@@ -632,20 +722,25 @@ const SupervisorDashboard = () => {
             </div>
 
             <div className="space-y-4">
-              {campaignData.outbound.map((campaign) => {
+              {outboundCampaigns.map((campaign) => {
+                const isCalling = campaign.status === 'Calling';
                 return (
                   <div 
                     key={campaign.id}
-                    onClick={() => navigate(`/campaigns/outbound/${campaign.id}`)}
-                    className="bg-white rounded-2xl border border-slate-100 hover:border-purple-200 transition-all duration-300 overflow-hidden cursor-pointer group hover:shadow-lg hover:shadow-purple-500/5 hover:-translate-y-1"
+                    className="bg-white rounded-2xl border border-slate-100 hover:border-purple-200 transition-all duration-300 overflow-hidden group hover:shadow-lg hover:shadow-purple-500/5 relative"
                   >
-                    <div className="p-5">
+                    <div className="p-5" onClick={() => navigate(`/campaigns/outbound/${campaign.id}`)}>
                       <div className="flex justify-between items-start">
                         <div className="flex items-center gap-3">
                           <h3 className="text-lg font-bold text-slate-800">{campaign.title}</h3>
                           {campaign.conversions > 30 && (
                             <span className="bg-emerald-100 text-emerald-700 text-[9px] font-black px-2 py-0.5 rounded-full uppercase flex items-center gap-1">
                                High Efficiency 🚀
+                            </span>
+                          )}
+                          {isCalling && (
+                            <span className="bg-rose-100 text-rose-700 text-[9px] font-black px-2 py-0.5 rounded-full uppercase flex items-center gap-1 animate-pulse">
+                               Active Calling 📞
                             </span>
                           )}
                         </div>
@@ -655,13 +750,12 @@ const SupervisorDashboard = () => {
                       </div>
 
                       <div className="grid grid-cols-2 gap-4 mt-4">
-                        <div className={`p-3 rounded-xl ${campaign.connectRate < 50 ? 'bg-rose-50 ring-1 ring-rose-200' : 'bg-purple-50/50'}`}>
+                        <div className={`p-3 rounded-xl ${campaign.connectRate < 50 && campaign.callsMade > 0 ? 'bg-rose-50 ring-1 ring-rose-200' : 'bg-purple-50/50'}`}>
                           <div className="flex justify-between items-center mb-0.5">
-                            <p className={`text-[9px] font-black uppercase tracking-widest ${campaign.connectRate < 50 ? 'text-rose-400' : 'text-purple-400'}`}>Connect Rate</p>
-                            {campaign.connectRate < 50 && <AlertCircle size={10} className="text-rose-500 animate-pulse" />}
+                            <p className={`text-[9px] font-black uppercase tracking-widest ${campaign.connectRate < 50 && campaign.callsMade > 0 ? 'text-rose-400' : 'text-purple-400'}`}>Connect Rate</p>
+                            {campaign.connectRate < 50 && campaign.callsMade > 0 && <AlertCircle size={10} className="text-rose-500 animate-pulse" />}
                           </div>
-                          <p className={`text-lg font-bold ${campaign.connectRate < 50 ? 'text-rose-600' : 'text-purple-700'}`}>{campaign.connectRate}%</p>
-                          {campaign.connectRate < 50 && <p className="text-[8px] font-bold text-rose-500 uppercase mt-0.5">Warning: Low Reach</p>}
+                          <p className={`text-lg font-bold ${campaign.connectRate < 50 && campaign.callsMade > 0 ? 'text-rose-600' : 'text-purple-700'}`}>{campaign.connectRate}%</p>
                         </div>
                         <div className="p-3 bg-emerald-50 rounded-xl relative overflow-hidden group/conv">
                           {campaign.conversions > 30 && <div className="absolute top-0 right-0 p-1"><Sparkles size={10} className="text-emerald-400" /></div>}
@@ -674,7 +768,17 @@ const SupervisorDashboard = () => {
                          <span className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1">
                            <Activity size={10} /> {campaign.callsMade} Calls Made
                          </span>
-                         <span className="text-[10px] font-black text-purple-600 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Analyze Leads & Funnel</span>
+                         {!isCalling && (
+                           <button 
+                             onClick={(e) => {
+                               e.stopPropagation();
+                               startCalling(campaign.id);
+                             }}
+                             className="flex items-center gap-1.5 px-3 py-1.5 bg-[#D71920] text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-rose-700 transition-colors shadow-lg shadow-rose-200"
+                           >
+                             <Play size={10} fill="currentColor" /> Start Calling
+                           </button>
+                         )}
                       </div>
                     </div>
                   </div>
@@ -766,6 +870,149 @@ const SupervisorDashboard = () => {
                 Return to Command Center
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Create Project Modal */}
+      {showCreateProject && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="bg-[#0A2C5E] p-5 text-white flex justify-between items-center">
+              <h3 className="text-lg font-bold">Initialize New Project</h3>
+              <button onClick={() => setShowCreateProject(false)} className="hover:bg-white/10 p-1 rounded-full"><LogOut className="rotate-180" size={20} /></button>
+            </div>
+            <form onSubmit={handleCreateProject} className="p-6 space-y-4">
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Project Name</label>
+                <input 
+                  required
+                  type="text" 
+                  value={newProject.name}
+                  onChange={e => setNewProject({...newProject, name: e.target.value})}
+                  className="w-full rounded-xl border-slate-200 text-base py-3 px-4 focus:ring-2 focus:ring-[#0A2C5E] focus:border-transparent transition-all shadow-sm"
+                  placeholder="e.g. Adani Shantigram Phase II"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Location</label>
+                <input 
+                  required
+                  type="text" 
+                  value={newProject.location}
+                  onChange={e => setNewProject({...newProject, location: e.target.value})}
+                  />
+              </div>
+              <div>
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Project Specs (CSV/PDF)</label>
+                  <button 
+                    type="button"
+                    onClick={downloadProjectSample}
+                    className="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline"
+                  >
+                    Download Sample
+                  </button>
+                </div>
+                <div className="relative group cursor-pointer">
+                  <input 
+                    type="file" 
+                    onChange={e => setNewProject({...newProject, file: e.target.files[0]})}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  />
+                  <div className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition-all ${newProject.file ? 'border-emerald-400 bg-emerald-50' : 'border-slate-200 group-hover:border-[#0A2C5E] bg-slate-50'}`}>
+                    {newProject.file ? (
+                      <>
+                        <Check className="text-emerald-500 mb-2" size={24} />
+                        <span className="text-xs font-bold text-emerald-700">{newProject.file.name}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="text-slate-400 group-hover:text-[#0A2C5E] mb-2 transition-colors" size={24} />
+                        <span className="text-xs font-bold text-slate-500 uppercase tracking-tight text-center">Upload project blueprints or specifications</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <button type="submit" className="w-full py-4 bg-[#0A2C5E] text-white rounded-xl text-sm font-black uppercase tracking-widest shadow-xl hover:bg-[#0c3875] transition-all active:scale-[0.98] mt-4">
+                Create Project
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Create Campaign Modal */}
+      {showCreateCampaign && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="bg-[#0A2C5E] p-5 text-white flex justify-between items-center">
+              <h3 className="text-lg font-bold">New Outbound Campaign</h3>
+              <button onClick={() => setShowCreateCampaign(false)} className="hover:bg-white/10 p-1 rounded-full"><LogOut className="rotate-180" size={20} /></button>
+            </div>
+            <form onSubmit={handleCreateCampaign} className="p-6 space-y-4">
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Campaign Title</label>
+                <input 
+                  required
+                  type="text" 
+                  value={newCampaign.title}
+                  onChange={e => setNewCampaign({...newCampaign, title: e.target.value})}
+                  className="w-full rounded-xl border-slate-200 text-base py-3 px-4 focus:ring-2 focus:ring-[#0A2C5E] focus:border-transparent transition-all shadow-sm"
+                  placeholder="e.g. Q3 Sales Push"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Select Project</label>
+                <select 
+                  required
+                  value={newCampaign.projectId}
+                  onChange={e => setNewCampaign({...newCampaign, projectId: e.target.value})}
+                  className="w-full rounded-xl border-slate-200 text-base py-3 px-4 focus:ring-2 focus:ring-[#0A2C5E] focus:border-transparent transition-all shadow-sm"
+                >
+                  <option value="">Select a project...</option>
+                  {allProjects.map(p => (
+                    <option key={p.id} value={p.id}>{p.name} - {p.location}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Lead File (CSV/XLSX)</label>
+                  <button 
+                    type="button"
+                    onClick={downloadSample}
+                    className="text-[10px] font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 uppercase tracking-tight"
+                  >
+                    <Upload size={10} className="rotate-180" /> Download Sample
+                  </button>
+                </div>
+                <div className="relative group cursor-pointer">
+                  <input 
+                    required
+                    type="file" 
+                    onChange={e => setNewCampaign({...newCampaign, file: e.target.files[0]})}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  />
+                  <div className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition-all ${newCampaign.file ? 'border-emerald-400 bg-emerald-50' : 'border-slate-200 group-hover:border-[#0A2C5E] bg-slate-50'}`}>
+                    {newCampaign.file ? (
+                      <>
+                        <Check className="text-emerald-500 mb-2" size={24} />
+                        <span className="text-xs font-bold text-emerald-700">{newCampaign.file.name}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="text-slate-400 group-hover:text-[#0A2C5E] mb-2 transition-colors" size={24} />
+                        <span className="text-xs font-bold text-slate-500 uppercase tracking-tight">Upload leads for this campaign</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <button type="submit" className="w-full py-4 bg-[#D71920] text-white rounded-xl text-sm font-black uppercase tracking-widest shadow-xl hover:bg-rose-700 transition-all active:scale-[0.98] mt-4">
+                Launch Campaign
+              </button>
+            </form>
           </div>
         </div>
       )}

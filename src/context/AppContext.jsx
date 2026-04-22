@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { defaultQaBreakdown, defaultSoftSkills, leads } from '../data/mockData';
+import { defaultQaBreakdown, defaultSoftSkills, leads, projects as initialProjects, campaignData } from '../data/mockData';
 import { AppContext } from './appContextObject';
 
 const sentimentFromTranscript = (messages) => {
@@ -69,67 +69,165 @@ export const AppProvider = ({ children }) => {
       score: 84,
       outcome: 'Visit Booked',
       summary: 'Rohan Nair discussed Adani Western Heights - 4 BHK. Visit booked.',
-      transcript: [
-        { id: 't1', sender: 'agent', text: 'Hello Rohan, glad you called back about Western Heights.' },
-        { id: 't2', sender: 'customer', text: 'Yes, is the price still the same as we discussed last week?' },
-        { id: 't3', sender: 'agent', text: 'We have a small festive revision, but I can honor previous pricing if we book the site visit today.' },
-        { id: 't4', sender: 'customer', text: 'Okay, let\'s do it for Sunday.' }
-      ],
-      breakdown: [
-        { category: 'Greeting', score: 18, max: 20 },
-        { category: 'Product explanation', score: 17, max: 20 },
-        { category: 'Pricing', score: 16, max: 20 },
-        { category: 'Objection handling', score: 15, max: 20 },
-        { category: 'Closing', score: 18, max: 20 },
-      ],
-      softSkills: [
-        { label: 'Empathy', value: 'Excellent' },
-        { label: 'Clarity', value: 'Strong' },
-        { label: 'Energy', value: 'High' },
-        { label: 'Tone', value: 'Professional' },
-        { label: 'Language match', value: 'Strong' },
-      ],
+      transcript: [],
       sentimentProgress: 84,
     },
     {
       id: 'seed-2',
       date: '19/04/2026',
       time: '02:30 PM',
-      agent: 'Riya Sharma',
+      agent: 'Amit Singh',
       customer: 'Sneha Desai',
       duration: '03m 45s',
       durationSeconds: 225,
       sentiment: 'Neutral',
-      score: 62,
+      score: 72,
       outcome: 'Follow-up',
       summary: 'Sneha Desai discussed Adani Codename Capital - 2 BHK. Needs follow-up.',
-      transcript: [
-        { id: 't1', sender: 'agent', text: 'Hi Sneha, checking if you had a look at the brochure.' },
-        { id: 't2', sender: 'customer', text: 'I did, but the 2 BHK seems a bit small for my family.' },
-        { id: 't3', sender: 'agent', text: 'We have variant layouts, maybe I can show you the larger configuration.' },
-        { id: 't4', sender: 'customer', text: 'Maybe next month, I am traveling right now.' }
-      ],
-      breakdown: [
-        { category: 'Greeting', score: 14, max: 20 },
-        { category: 'Product explanation', score: 12, max: 20 },
-        { category: 'Pricing', score: 10, max: 20 },
-        { category: 'Objection handling', score: 11, max: 20 },
-        { category: 'Closing', score: 15, max: 20 },
-      ],
-      softSkills: [
-        { label: 'Empathy', value: 'Average' },
-        { label: 'Clarity', value: 'Moderate' },
-        { label: 'Energy', value: 'Low' },
-        { label: 'Tone', value: 'Neutral' },
-        { label: 'Language match', value: 'Average' },
-      ],
-      sentimentProgress: 62,
+      transcript: [],
+      sentimentProgress: 72,
+    },
+    {
+      id: 'seed-3',
+      date: '20/04/2026',
+      time: '04:15 PM',
+      agent: 'Priya Das',
+      customer: 'Vikram Patel',
+      duration: '09m 20s',
+      durationSeconds: 560,
+      sentiment: 'Positive',
+      score: 91,
+      outcome: 'Visit Booked',
+      summary: 'High quality interaction. Customer very satisfied with 3BHK pricing.',
+      transcript: [],
+      sentimentProgress: 91,
+    },
+    {
+      id: 'seed-4',
+      date: '18/04/2026',
+      time: '01:00 PM',
+      agent: 'Rahul Varma',
+      customer: 'Anita Reddy',
+      duration: '02m 10s',
+      durationSeconds: 130,
+      sentiment: 'Mixed',
+      score: 58,
+      outcome: 'Escalated',
+      summary: 'Customer had complaints about previous site visit experience.',
+      transcript: [],
+      sentimentProgress: 58,
+    },
+    {
+      id: 'seed-5',
+      date: '20/04/2026',
+      time: '09:00 AM',
+      agent: 'Priya Das',
+      customer: 'Suresh Raina',
+      duration: '05m 40s',
+      durationSeconds: 340,
+      sentiment: 'Positive',
+      score: 88,
+      outcome: 'Visit Booked',
+      summary: 'Follow up on payment plan. Successful site visit scheduled.',
+      transcript: [],
+      sentimentProgress: 88,
+    },
+    {
+      id: 'seed-6',
+      date: '19/04/2026',
+      time: '11:15 AM',
+      agent: 'Riya Sharma',
+      customer: 'Sneha Desai',
+      duration: '04m 50s',
+      durationSeconds: 290,
+      sentiment: 'Positive',
+      score: 86,
+      outcome: 'Visit Booked',
+      summary: 'Follow up on 2 BHK requirement. Visit booked for next Tuesday.',
+      transcript: [],
+      sentimentProgress: 86,
     }
   ]);
   const [visitBooked, setVisitBooked] = useState(false);
   const [lastCallSummary, setLastCallSummary] = useState(null);
   const [selectedLeadId, setSelectedLeadId] = useState(leads[0]?.id ?? null);
   const [disposition, setDisposition] = useState('');
+
+  // Global Dashboard State
+  const [supervisorView, setSupervisorView] = useState('agent');
+
+  // Global Campaign & Project State
+  const [allProjects, setAllProjects] = useState(initialProjects);
+  const [outboundCampaigns, setOutboundCampaigns] = useState(campaignData.outbound);
+  const [inboundCampaigns, setInboundCampaigns] = useState(campaignData.inbound);
+
+  // Incoming Call State
+  const [incomingCall, setIncomingCall] = useState(null);
+  const [customerHistory, setCustomerHistory] = useState([]);
+
+  const addProject = useCallback((project) => {
+    setAllProjects((prev) => [...prev, project]);
+  }, []);
+
+  const addCampaign = useCallback((campaign) => {
+    setOutboundCampaigns((prev) => [campaign, ...prev]);
+  }, []);
+
+  const updateCampaignStatus = useCallback((campaignId, status, callsMadeIncrement = 0) => {
+    setOutboundCampaigns((prev) => prev.map(c => 
+      c.id === campaignId ? { ...c, status, callsMade: c.callsMade + callsMadeIncrement } : c
+    ));
+  }, []);
+
+  const [escalations, setEscalations] = useState([
+    {
+      id: 'esc-1',
+      sessionDate: '18/04/2026',
+      customer: 'Anita Reddy',
+      escalatedTo: 'Rahul Mehra',
+      reason: 'Critical pricing dispute over 3 BHK availability.',
+      status: 'Resolved',
+      timestamp: '2 hours ago'
+    }
+  ]);
+
+  const addEscalation = useCallback((escalation) => {
+    setEscalations((prev) => [
+      {
+        id: `esc-${Date.now()}`,
+        timestamp: 'Just now',
+        status: 'Pending',
+        ...escalation
+      },
+      ...prev
+    ]);
+  }, []);
+
+  const triggerIncomingCall = useCallback((leadId) => {
+    const lead = leads.find(l => l.id === leadId) || leads[0];
+    setIncomingCall({
+      id: `call-${Date.now()}`,
+      lead,
+      type: 'Incoming',
+      timestamp: new Date().toLocaleTimeString(),
+      aiHistory: [
+        { id: 'h1', sender: 'customer', text: 'Hi, I saw your Adani Western Heights project. Is it still available?' },
+        { id: 'h2', sender: 'agent', text: 'Hello! Yes, we have limited 4 BHK units available. Would you like to know about the pricing or location features?' },
+        { id: 'h3', sender: 'customer', text: 'Both. But first, tell me about the proximity to the airport.' },
+        { id: 'h4', sender: 'agent', text: 'Western Heights is just 15 minutes from the International Airport. Regarding pricing, would you like a detailed brochure?' },
+        { id: 'h5', sender: 'customer', text: 'Yes, but I have some specific questions about the floor plan. Can I speak to an agent?' }
+      ]
+    });
+  }, []);
+
+  const acceptCall = useCallback(() => {
+    if (incomingCall) {
+      setActiveCustomer(incomingCall.lead);
+      setTranscriptMessages(incomingCall.aiHistory);
+      setIncomingCall(null);
+      setCallState('active');
+    }
+  }, [incomingCall]);
 
   const addTranscriptMessage = useCallback((message) => {
     setTranscriptMessages((prev) => [...prev, message]);
@@ -141,6 +239,7 @@ export const AppProvider = ({ children }) => {
     setAiSuggestions([]);
     setVisitBooked(false);
     setDisposition('');
+    setIncomingCall(null);
   }, []);
 
   const completeCallWithQa = useCallback(
@@ -223,6 +322,25 @@ export const AppProvider = ({ children }) => {
       setSelectedLeadId,
       disposition,
       setDisposition,
+      allProjects,
+      setAllProjects,
+      outboundCampaigns,
+      setOutboundCampaigns,
+      addProject,
+      addCampaign,
+      updateCampaignStatus,
+      supervisorView,
+      setSupervisorView,
+      incomingCall,
+      setIncomingCall,
+      triggerIncomingCall,
+      acceptCall,
+      customerHistory,
+      setCustomerHistory,
+      inboundCampaigns,
+      campaignData: { outbound: outboundCampaigns, inbound: inboundCampaigns },
+      escalations,
+      addEscalation,
     }),
     [
       callState,
@@ -238,6 +356,19 @@ export const AppProvider = ({ children }) => {
       lastCallSummary,
       selectedLeadId,
       disposition,
+      allProjects,
+      outboundCampaigns,
+      inboundCampaigns,
+      addProject,
+      addCampaign,
+      updateCampaignStatus,
+      supervisorView,
+      incomingCall,
+      triggerIncomingCall,
+      acceptCall,
+      customerHistory,
+      escalations,
+      addEscalation,
     ],
   );
 

@@ -18,6 +18,7 @@ const AgentConsole = () => {
     callState,
     setCallState,
     activeCustomer,
+    setActiveCustomer,
     transcriptMessages,
     setTranscriptMessages,
     addTranscriptMessage,
@@ -28,6 +29,10 @@ const AgentConsole = () => {
     lastCallSummary,
     resetCallSession,
     callRecords,
+    incomingCall,
+    acceptCall,
+    triggerIncomingCall,
+    setIncomingCall,
   } = useApp();
 
   const [muted, setMuted] = useState(false);
@@ -208,6 +213,17 @@ const AgentConsole = () => {
     outcome: visitBooked ? 'Visit Booked' : 'Not Converted',
   };
 
+  // For Demo: Trigger incoming call after 10 seconds if idle
+  useEffect(() => {
+    if (callState === 'idle' && !incomingCall) {
+      const timer = setTimeout(() => {
+        triggerIncomingCall(leads[0].id);
+      }, 10000);
+      return () => clearTimeout(timer);
+    }
+    return undefined;
+  }, [callState, incomingCall, triggerIncomingCall]);
+
   return (
     <AppShell title="Agent Console" fitViewport>
       <div className="mb-3 rounded-xl border border-[#0A2C5E]/15 bg-white px-3 py-2 shadow-sm">
@@ -224,6 +240,12 @@ const AgentConsole = () => {
           <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 ${visitBooked ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
             <Target size={14} /> Conversion: {visitBooked ? 'Booked' : 'Pending'}
           </span>
+          <button 
+            onClick={() => triggerIncomingCall(leads[0].id)}
+            className="ml-auto px-3 py-1 rounded-full bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all active:scale-95 shadow-md shadow-emerald-100"
+          >
+            Demo Incoming
+          </button>
           <span className="text-xs text-slate-500">Supervisor may join if needed</span>
         </div>
         <p className="mt-1 text-[11px] text-slate-500">{activityMessage}</p>
@@ -269,6 +291,12 @@ const AgentConsole = () => {
             onBookVisit={() => setShowVisitModal(true)}
             onEndCall={endCall}
             onStartNewCall={startNewCall}
+            incomingCall={incomingCall}
+            onAcceptCall={acceptCall}
+            onRejectCall={() => {
+              setIncomingCall(null);
+              setTranscriptMessages([]);
+            }}
             onGoToQa={() => {
               const lastId = callRecords[0]?.id;
               if (lastId) navigate(`/qa/${lastId}`);
@@ -319,6 +347,7 @@ const AgentConsole = () => {
           </div>
         </div>
       ) : null}
+
     </AppShell>
   );
 };

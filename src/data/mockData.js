@@ -4,6 +4,13 @@ export const demoUsers = {
   admin: { id: 'u-admin-1', name: 'Neha Kapoor', email: 'admin@adani.com', role: 'admin' },
 };
 
+export const projects = [
+  { id: 'proj-1', name: 'Adani Atelier Greens', location: 'Ahmedabad' },
+  { id: 'proj-2', name: 'Adani Western Heights', location: 'Mumbai' },
+  { id: 'proj-3', name: 'Adani Codename Capital', location: 'Pune' },
+  { id: 'proj-4', name: 'Adani Shantigram', location: 'Ahmedabad' },
+];
+
 export const leads = [
   {
     id: 'lead-1001',

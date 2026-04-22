@@ -16,6 +16,9 @@ const CallControlBar = ({
   onEndCall,
   onStartNewCall,
   onGoToQa,
+  incomingCall,
+  onAcceptCall,
+  onRejectCall,
 }) => {
   const isActive = callState === 'active';
   const isOnHold = callState === 'on_hold';
@@ -47,31 +50,46 @@ const CallControlBar = ({
 
   return (
     <div className="sticky bottom-0 z-20 border-t border-slate-200 bg-white/95 px-3 py-3 backdrop-blur-sm">
-      <div className="grid grid-cols-6 gap-2">
+      <div className="flex gap-2">
         <button
           type="button"
-          className={`${baseBtn} bg-emerald-600 text-white hover:bg-emerald-700 hover:shadow-lg`}
-          onClick={onStartCall}
+          className={`${baseBtn} flex-1 bg-emerald-600 text-white hover:bg-emerald-700 hover:shadow-lg`}
+          onClick={incomingCall ? onAcceptCall : onStartCall}
           disabled={inLiveCall || callState === 'dialing'}
         >
-          <Phone size={14} /> Call
+          <Phone size={14} /> {incomingCall ? 'Accept' : 'Call'}
         </button>
 
-        <button type="button" className={`${baseBtn} ${outlineBtn}`} onClick={onHold} disabled={!isActive}>
-          <PauseCircle size={14} /> Hold
+        {incomingCall && (
+          <button
+            type="button"
+            className={`${baseBtn} flex-1 border border-[#D71920]/30 bg-white text-[#D71920] hover:bg-red-50`}
+            onClick={onRejectCall}
+          >
+            <PhoneOff size={14} /> Reject
+          </button>
+        )}
+
+        <button 
+          type="button" 
+          className={`${baseBtn} flex-1 ${outlineBtn}`} 
+          onClick={isOnHold ? onResume : onHold} 
+          disabled={!inLiveCall}
+        >
+          {isOnHold ? (
+            <><Play size={14} /> Resume</>
+          ) : (
+            <><PauseCircle size={14} /> Hold</>
+          )}
         </button>
 
-        <button type="button" className={`${baseBtn} ${outlineBtn}`} onClick={onResume} disabled={!isOnHold}>
-          <Play size={14} /> Resume
-        </button>
-
-        <button type="button" className={`${baseBtn} ${outlineBtn}`} onClick={onToggleMute} disabled={!inLiveCall}>
+        <button type="button" className={`${baseBtn} flex-1 ${outlineBtn}`} onClick={onToggleMute} disabled={!inLiveCall}>
           <MicOff size={14} /> {muted ? 'Unmute' : 'Mute'}
         </button>
 
         <button
           type="button"
-          className={`${baseBtn} bg-amber-500 text-white hover:bg-amber-600 hover:shadow-lg`}
+          className={`${baseBtn} flex-1 bg-amber-500 text-white hover:bg-amber-600 hover:shadow-lg`}
           onClick={onBookVisit}
           disabled={!inLiveCall}
         >
@@ -80,7 +98,7 @@ const CallControlBar = ({
 
         <button
           type="button"
-          className={`${baseBtn} bg-[#D71920] text-white hover:bg-[#bf161c] hover:shadow-lg`}
+          className={`${baseBtn} flex-1 bg-[#D71920] text-white hover:bg-[#bf161c] hover:shadow-lg`}
           onClick={onEndCall}
           disabled={!inLiveCall}
         >
@@ -90,5 +108,6 @@ const CallControlBar = ({
     </div>
   );
 };
+
 
 export default CallControlBar;

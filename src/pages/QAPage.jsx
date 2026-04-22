@@ -55,6 +55,7 @@ const QAPage = () => {
   
   const isAgent = user?.role === 'agent';
   const [loading, setLoading] = useState(true);
+  const [showEscalateModal, setShowEscalateModal] = useState(false);
 
   const activeCallData = useMemo(() => {
     if (callId) {
@@ -285,18 +286,17 @@ const QAPage = () => {
               <h3 className="text-xs font-black uppercase text-slate-400 tracking-[0.2em] mb-6">
                 {isAgent ? "Session Summary" : "Management Decisions"}
               </h3>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <button className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-slate-100 hover:border-[#0A2C5E] transition-all group">
                   <FileText size={20} className="text-slate-600 group-hover:text-[#0A2C5E]" />
                   <span className="text-[10px] font-black uppercase tracking-widest">Full Transcript</span>
                 </button>
-                <button className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-orange-50 hover:border-orange-500 transition-all group">
-                  <Flag size={20} className="text-slate-600 group-hover:text-orange-500" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Flag for Review</span>
-                </button>
-                <button className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-blue-50 hover:border-blue-500 transition-all group">
-                  <MessageSquare size={20} className="text-slate-600 group-hover:text-blue-500" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Send Coaching</span>
+                <button 
+                  onClick={() => setShowEscalateModal(true)}
+                  className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-rose-50 hover:border-rose-500 transition-all group"
+                >
+                  <ShieldAlert size={20} className="text-slate-600 group-hover:text-rose-500" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-rose-600">Escalate</span>
                 </button>
               </div>
             </section>
@@ -304,6 +304,61 @@ const QAPage = () => {
           </div>
         </div>
       </div>
+
+      {showEscalateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-6">
+          <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 rounded-xl bg-rose-100 text-rose-600">
+                <ShieldAlert size={24} />
+              </div>
+              <h3 className="text-xl font-black text-[#0A2C5E]">Escalate Session</h3>
+            </div>
+            
+            <p className="text-sm text-slate-500 mb-6">
+              Flag this session for immediate review by a senior supervisor or quality head.
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-400 block mb-2">Escalate To</label>
+                <select className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-700 focus:border-[#0A2C5E] focus:ring-0 outline-none transition-all">
+                  <option>Select Stakeholder</option>
+                  <option>Rahul Mehra (Sr. Quality Head)</option>
+                  <option>Priya Sharma (Operations Manager)</option>
+                  <option>Amit Singh (Project Lead)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-400 block mb-2">Reason for Escalation</label>
+                <textarea 
+                  placeholder="Describe the critical deviation or required intervention..."
+                  className="w-full h-24 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-700 focus:border-[#0A2C5E] focus:ring-0 outline-none transition-all resize-none"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 mt-8">
+              <button
+                onClick={() => setShowEscalateModal(false)}
+                className="py-3 rounded-xl border border-slate-200 text-sm font-black uppercase tracking-widest text-slate-400 hover:bg-slate-50 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  alert('Session Escalated Successfully');
+                  setShowEscalateModal(false);
+                }}
+                className="py-3 rounded-xl bg-rose-600 text-white text-sm font-black uppercase tracking-widest hover:bg-rose-700 shadow-lg shadow-rose-200 transition-all active:scale-95"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppShell>
   );
 };

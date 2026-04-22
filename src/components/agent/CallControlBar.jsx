@@ -1,7 +1,8 @@
-import { Phone, PauseCircle, MicOff, CalendarPlus, PhoneOff, Play, FileCheck2 } from 'lucide-react';
+import { useState } from 'react';
+import { Phone, PauseCircle, MicOff, CalendarPlus, PhoneOff, Play, FileCheck2, Share2, MessageSquare, ShieldAlert, Search } from 'lucide-react';
 
 const baseBtn =
-  'inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-all duration-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45';
+  'inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-[11px] font-black uppercase tracking-widest transition-all duration-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45';
 
 const outlineBtn = 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 hover:shadow-md';
 
@@ -20,10 +21,16 @@ const CallControlBar = ({
   onAcceptCall,
   onRejectCall,
 }) => {
+  const [showTransfer, setShowTransfer] = useState(false);
   const isActive = callState === 'active';
   const isOnHold = callState === 'on_hold';
   const inLiveCall = isActive || isOnHold;
   const isEnded = callState === 'ended';
+
+  const handleTransfer = (dept) => {
+    onRejectCall(); // Resets call session
+    setShowTransfer(false);
+  };
 
   if (isEnded) {
     return (
@@ -50,6 +57,23 @@ const CallControlBar = ({
 
   return (
     <div className="sticky bottom-0 z-20 border-t border-slate-200 bg-white/95 px-3 py-3 backdrop-blur-sm">
+      {showTransfer && (
+        <div className="absolute bottom-full left-0 mb-2 w-48 bg-white rounded-xl shadow-2xl border border-slate-100 overflow-hidden animate-in slide-in-from-bottom-2">
+          <div className="p-2 bg-slate-50 border-b border-slate-100">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Transfer Call to</p>
+          </div>
+          <button onClick={() => handleTransfer('Support')} className="w-full flex items-center gap-3 px-4 py-2.5 text-[11px] font-bold text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+            <MessageSquare size={14} /> Customer Support
+          </button>
+          <button onClick={() => handleTransfer('Grievance')} className="w-full flex items-center gap-3 px-4 py-2.5 text-[11px] font-bold text-slate-600 hover:bg-rose-50 hover:text-rose-600 transition-colors">
+            <ShieldAlert size={14} /> Grievance
+          </button>
+          <button onClick={() => handleTransfer('Inquiry')} className="w-full flex items-center gap-3 px-4 py-2.5 text-[11px] font-bold text-slate-600 hover:bg-emerald-50 hover:text-emerald-600 transition-colors">
+            <Search size={14} /> Inquiry
+          </button>
+        </div>
+      )}
+
       <div className="flex gap-2">
         <button
           type="button"
@@ -63,10 +87,10 @@ const CallControlBar = ({
         {incomingCall && (
           <button
             type="button"
-            className={`${baseBtn} flex-1 border border-[#D71920]/30 bg-white text-[#D71920] hover:bg-red-50`}
-            onClick={onRejectCall}
+            className={`${baseBtn} flex-1 border border-slate-300 bg-white text-slate-600 hover:bg-slate-50`}
+            onClick={() => setShowTransfer(!showTransfer)}
           >
-            <PhoneOff size={14} /> Reject
+            <Share2 size={14} /> Transfer
           </button>
         )}
 

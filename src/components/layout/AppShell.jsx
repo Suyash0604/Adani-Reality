@@ -41,8 +41,8 @@ const AppShell = ({ title, children, fitViewport = false }) => {
   const navItems = navByRole[user?.role] ?? [];
 
   return (
-    <div className={`${fitViewport ? 'h-screen overflow-hidden' : 'min-h-screen'} bg-slate-100 text-slate-900 flex flex-col`}>
-      <header className="border-b border-slate-200 bg-white px-6 py-3 shadow-sm z-20">
+    <div className="h-screen overflow-hidden bg-slate-100 text-slate-900 flex flex-col">
+      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/80 backdrop-blur-md px-6 py-3 shadow-sm shrink-0">
         <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between">
           <div className="flex items-center gap-4">
             <img 
@@ -78,10 +78,10 @@ const AppShell = ({ title, children, fitViewport = false }) => {
         </div>
       </header>
 
-      <div className={`flex flex-1 w-full max-w-[1600px] mx-auto relative ${fitViewport ? 'overflow-hidden' : ''}`}>
+      <div className="flex flex-1 w-full max-w-[1600px] mx-auto relative overflow-hidden">
         {/* Navigation - Collapsible via Button inside Sidebar */}
         <aside 
-          className={`fixed lg:relative z-10 h-[calc(100vh-65px)] ${isExpanded ? 'w-64' : 'w-16'} shrink-0 bg-white border-r border-slate-200 transition-all duration-300 ease-in-out shadow-lg lg:shadow-none flex flex-col`}
+          className={`h-full ${isExpanded ? 'w-64' : 'w-16'} shrink-0 bg-white border-r border-slate-200 transition-all duration-300 ease-in-out shadow-lg lg:shadow-none flex flex-col`}
         >
           <div className="p-3">
             <button 
@@ -145,7 +145,7 @@ const AppShell = ({ title, children, fitViewport = false }) => {
 
         {/* Main Content */}
         <main 
-          className={`flex-1 transition-all duration-300 px-6 py-6 overflow-y-auto ${fitViewport ? 'h-[calc(100vh-65px)]' : ''}`}
+          className="flex-1 transition-all duration-300 px-6 py-6 overflow-y-auto"
         >
           {children}
         </main>

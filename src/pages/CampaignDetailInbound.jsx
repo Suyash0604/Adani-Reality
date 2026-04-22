@@ -85,6 +85,77 @@ const Toast = ({ show, message }) => {
   );
 };
 
+const TicketsTable = ({ campaign }) => {
+  const mockTickets = [
+    { id: 'TKT-1024', customer: 'Rahul Sharma', subject: 'Possession delay query', priority: 'High', status: 'Open', date: '22/04/2026' },
+    { id: 'TKT-1025', customer: 'Anjali Gupta', subject: 'Document verification', priority: 'Medium', status: 'Resolved', date: '21/04/2026' },
+    { id: 'TKT-1026', customer: 'Suresh Raina', subject: 'Parking slot allocation', priority: 'Low', status: 'In Progress', date: '22/04/2026' },
+    { id: 'TKT-1027', customer: 'Sneha Desai', subject: 'Maintenance fee dispute', priority: 'High', status: 'Escalated', date: '20/04/2026' },
+    { id: 'TKT-1028', customer: 'Vikram Patel', subject: 'Site visit coordination', priority: 'Medium', status: 'Open', date: '22/04/2026' },
+  ];
+
+  return (
+    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+        <div>
+          <h3 className="text-sm font-black text-[#0A2C5E] uppercase tracking-wider">Active {campaign.title} Tickets</h3>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Real-time case tracking</p>
+        </div>
+        <div className="flex gap-2">
+          <button className="p-2 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-[#0A2C5E] transition-all shadow-sm">
+            <Users size={16} />
+          </button>
+        </div>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-slate-50 border-b border-slate-100">
+              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">ID</th>
+              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Customer</th>
+              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Subject</th>
+              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Priority</th>
+              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
+              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {mockTickets.map((tkt, i) => (
+              <tr key={i} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors group">
+                <td className="px-6 py-4">
+                  <span className="text-[11px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded-md">{tkt.id}</span>
+                </td>
+                <td className="px-6 py-4 text-xs font-bold text-slate-700">{tkt.customer}</td>
+                <td className="px-6 py-4 text-xs text-slate-600">{tkt.subject}</td>
+                <td className="px-6 py-4">
+                  <span className={`text-[9px] font-black uppercase px-2 py-1 rounded-full ${
+                    tkt.priority === 'High' ? 'bg-rose-50 text-rose-600' :
+                    tkt.priority === 'Medium' ? 'bg-amber-50 text-amber-600' :
+                    'bg-emerald-50 text-emerald-600'
+                  }`}>
+                    {tkt.priority}
+                  </span>
+                </td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-2">
+                    <div className={`h-1.5 w-1.5 rounded-full ${
+                      tkt.status === 'Resolved' ? 'bg-emerald-500' :
+                      tkt.status === 'Open' ? 'bg-blue-500 animate-pulse' :
+                      tkt.status === 'Escalated' ? 'bg-rose-500' : 'bg-amber-500'
+                    }`} />
+                    <span className="text-xs font-bold text-slate-700">{tkt.status}</span>
+                  </div>
+                </td>
+                <td className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase">{tkt.date}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
 const GenericInboundDetail = ({ campaign, triggerAction }) => {
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
@@ -94,7 +165,7 @@ const GenericInboundDetail = ({ campaign, triggerAction }) => {
           { label: 'Pending Cases', value: campaign.pendingCases, icon: <Clock className="text-amber-600" size={20} /> },
           { label: 'Critical Escalations', value: campaign.criticalEscalations, icon: <AlertCircle className="text-rose-600" size={20} /> },
         ].map((kpi, i) => (
-          <div key={i} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+          <div key={i} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all">
             <div className="flex justify-between items-start mb-4">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{kpi.label}</span>
               {kpi.icon}
@@ -103,6 +174,8 @@ const GenericInboundDetail = ({ campaign, triggerAction }) => {
           </div>
         ))}
       </div>
+      
+      <TicketsTable campaign={campaign} />
     </div>
   );
 };

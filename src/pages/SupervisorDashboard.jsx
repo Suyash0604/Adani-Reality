@@ -87,7 +87,15 @@ const SupervisorDashboard = () => {
     location: '', 
     file: null
   });
-  const [newCampaign, setNewCampaign] = useState({ title: '', projectId: '', file: null });
+  const [newCampaign, setNewCampaign] = useState({ 
+    title: '', 
+    projectId: '', 
+    file: null,
+    script: '{{1}}',
+    variables: [''],
+    language: 'English',
+    voice: 'Neural Female'
+  });
 
   // Reaction States
   const [isAdapting, setIsAdapting] = useState(false);
@@ -96,6 +104,27 @@ const SupervisorDashboard = () => {
   // Intervention Timers
   const [interventionDuration, setInterventionDuration] = useState(0);
   const [transcriptIndex, setTranscriptIndex] = useState(0);
+
+  // Sync variables with script tags
+  useEffect(() => {
+    const matches = newCampaign.script.match(/\{\{(\d+)\}\}/g) || [];
+    const uniqueIndices = [...new Set(matches.map(m => parseInt(m.match(/\d+/)[0])))].sort((a, b) => a - b);
+    const maxIndex = uniqueIndices.length > 0 ? Math.max(...uniqueIndices) : 0;
+    
+    if (newCampaign.variables.length !== maxIndex) {
+      setNewCampaign(prev => {
+        const newVars = [...prev.variables];
+        if (maxIndex > prev.variables.length) {
+          // Grow
+          for (let i = prev.variables.length; i < maxIndex; i++) newVars.push('');
+        } else {
+          // Shrink
+          newVars.length = maxIndex;
+        }
+        return { ...prev, variables: newVars };
+      });
+    }
+  }, [newCampaign.script]);
 
   useEffect(() => {
     let timer;
@@ -231,13 +260,25 @@ const SupervisorDashboard = () => {
         stats: { total: 0, reached: 0, failed: 0 },
         metrics: { siteVisits: 0, dropped: 0 },
         aiInsights: 'Campaign ready to start',
-        leadQuality: 0
+        leadQuality: 0,
+        script: newCampaign.script,
+        variables: newCampaign.variables,
+        language: newCampaign.language,
+        voice: newCampaign.voice
       }
     };
     
     addCampaign(newCamp);
     setShowCreateCampaign(false);
-    setNewCampaign({ title: '', projectId: '', file: null });
+    setNewCampaign({ 
+      title: '', 
+      projectId: '', 
+      file: null,
+      script: '{{1}}',
+      variables: [''],
+      language: 'English',
+      voice: 'Neural Female'
+    });
     addToast('Campaign launched successfully', 'success');
   };
 
@@ -525,25 +566,6 @@ const SupervisorDashboard = () => {
                         </p>
                       </div>
                     )}
-
-                    {/* Progress & Risk */}
-                    <div className="space-y-3 mb-6">
-                      <div>
-                        <div className="flex justify-between text-[10px] font-bold text-slate-400 mb-1 uppercase">
-                          <span>Script Adherence</span>
-                          <span className={`transition-colors duration-1000 ${isTarget ? 'text-[#D71920]' : 'text-[#0A2C5E]'}`}>
-                            {agent.scriptScore}%
-                          </span>
-                        </div>
-                        <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                          <div className={`h-full transition-all duration-[1500ms] ease-out ${
-                            cardMode === 'whisper' ? 'bg-amber-500' : 
-                            cardMode === 'monitor' ? 'bg-blue-500' : 
-                            'bg-[#0A2C5E]'
-                          }`} style={{ width: `${agent.scriptScore}%` }} />
-                        </div>
-                      </div>
-                    </div>
 
                     {/* Intervention Controls */}
                     <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
@@ -879,72 +901,177 @@ const SupervisorDashboard = () => {
       {/* Create Campaign Modal */}
       {showCreateCampaign && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-            <div className="bg-[#0A2C5E] p-5 text-white flex justify-between items-center">
-              <h3 className="text-lg font-bold">New Outbound Campaign</h3>
-              <button onClick={() => setShowCreateCampaign(false)} className="hover:bg-white/10 p-1 rounded-full"><LogOut className="rotate-180" size={20} /></button>
+          <div className="w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="bg-[#0A2C5E] p-6 text-white flex justify-between items-center">
+              <h3 className="text-xl font-black uppercase tracking-tight">New Outbound Campaign</h3>
+              <button onClick={() => setShowCreateCampaign(false)} className="hover:bg-white/10 p-2 rounded-full transition-colors">
+                <LogOut className="rotate-180" size={24} />
+              </button>
             </div>
-            <form onSubmit={handleCreateCampaign} className="p-6 space-y-4">
-              <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Campaign Title</label>
-                <input 
-                  required
-                  type="text" 
-                  value={newCampaign.title}
-                  onChange={e => setNewCampaign({...newCampaign, title: e.target.value})}
-                  className="w-full rounded-xl border-slate-200 text-base py-3 px-4 focus:ring-2 focus:ring-[#0A2C5E] focus:border-transparent transition-all shadow-sm"
-                  placeholder="e.g. Q3 Sales Push"
-                />
-              </div>
-              <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Select Project</label>
-                <select 
-                  required
-                  value={newCampaign.projectId}
-                  onChange={e => setNewCampaign({...newCampaign, projectId: e.target.value})}
-                  className="w-full rounded-xl border-slate-200 text-base py-3 px-4 focus:ring-2 focus:ring-[#0A2C5E] focus:border-transparent transition-all shadow-sm"
-                >
-                  <option value="">Select a project...</option>
-                  {allProjects.map(p => (
-                    <option key={p.id} value={p.id}>{p.name} - {p.location}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <div className="flex justify-between items-center mb-1.5">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Lead File (CSV/XLSX)</label>
-                  <button 
-                    type="button"
-                    onClick={downloadSample}
-                    className="text-[10px] font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 uppercase tracking-tight"
-                  >
-                    <Upload size={10} className="rotate-180" /> Download Sample
-                  </button>
+            <form onSubmit={handleCreateCampaign} className="p-10 space-y-8">
+              <div className="grid grid-cols-2 gap-10">
+                <div className="space-y-8">
+                  <div>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Campaign Title</label>
+                    <input 
+                      required
+                      type="text" 
+                      value={newCampaign.title}
+                      onChange={e => setNewCampaign({...newCampaign, title: e.target.value})}
+                      className="w-full rounded-2xl border-slate-200 text-base py-3.5 px-5 focus:ring-2 focus:ring-[#0A2C5E] focus:border-transparent transition-all shadow-sm bg-slate-50/50"
+                      placeholder="e.g. Q3 Sales Push"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Select Project</label>
+                    <select 
+                      required
+                      value={newCampaign.projectId}
+                      onChange={e => setNewCampaign({...newCampaign, projectId: e.target.value})}
+                      className="w-full rounded-2xl border-slate-200 text-base py-3.5 px-5 focus:ring-2 focus:ring-[#0A2C5E] focus:border-transparent transition-all shadow-sm bg-slate-50/50"
+                    >
+                      <option value="">Select a project...</option>
+                      {allProjects.map(p => (
+                        <option key={p.id} value={p.id}>{p.name} - {p.location}</option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Language</label>
+                      <select 
+                        value={newCampaign.language}
+                        onChange={e => setNewCampaign({...newCampaign, language: e.target.value})}
+                        className="w-full rounded-2xl border-slate-200 text-sm py-3 px-4 focus:ring-2 focus:ring-[#0A2C5E] bg-slate-50/50"
+                      >
+                        <option>English</option>
+                        <option>Hindi</option>
+                        <option>Marathi</option>
+                        <option>Gujarati</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Voice Tone</label>
+                      <select 
+                        value={newCampaign.voice}
+                        onChange={e => setNewCampaign({...newCampaign, voice: e.target.value})}
+                        className="w-full rounded-2xl border-slate-200 text-sm py-3 px-4 focus:ring-2 focus:ring-[#0A2C5E] bg-slate-50/50"
+                      >
+                        <option>Neural Female</option>
+                        <option>Neural Male</option>
+                        <option>Professional</option>
+                        <option>Friendly</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Lead File (CSV/XLSX)</label>
+                      <button 
+                        type="button"
+                        onClick={downloadSample}
+                        className="text-[10px] font-black text-blue-600 hover:text-blue-700 flex items-center gap-1 uppercase tracking-widest"
+                      >
+                        <Upload size={12} className="rotate-180" /> Download Sample
+                      </button>
+                    </div>
+                    <div className="relative group cursor-pointer">
+                      <input 
+                        required
+                        type="file" 
+                        onChange={e => setNewCampaign({...newCampaign, file: e.target.files[0]})}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      />
+                      <div className={`border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center transition-all min-h-[140px] ${newCampaign.file ? 'border-emerald-400 bg-emerald-50' : 'border-slate-200 group-hover:border-[#0A2C5E] bg-slate-50'}`}>
+                        {newCampaign.file ? (
+                          <>
+                            <Check className="text-emerald-500 mb-2" size={32} />
+                            <span className="text-sm font-bold text-emerald-700">{newCampaign.file.name}</span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="text-slate-400 group-hover:text-[#0A2C5E] mb-2 transition-colors" size={32} />
+                            <span className="text-xs font-bold text-slate-500 uppercase tracking-widest text-center leading-relaxed">Click or drag lead file to upload</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="relative group cursor-pointer">
-                  <input 
-                    required
-                    type="file" 
-                    onChange={e => setNewCampaign({...newCampaign, file: e.target.files[0]})}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                  />
-                  <div className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition-all ${newCampaign.file ? 'border-emerald-400 bg-emerald-50' : 'border-slate-200 group-hover:border-[#0A2C5E] bg-slate-50'}`}>
-                    {newCampaign.file ? (
-                      <>
-                        <Check className="text-emerald-500 mb-2" size={24} />
-                        <span className="text-xs font-bold text-emerald-700">{newCampaign.file.name}</span>
-                      </>
-                    ) : (
-                      <>
-                        <Upload className="text-slate-400 group-hover:text-[#0A2C5E] mb-2 transition-colors" size={24} />
-                        <span className="text-xs font-bold text-slate-500 uppercase tracking-tight">Upload leads for this campaign</span>
-                      </>
-                    )}
+
+                <div className="space-y-8 bg-slate-50 p-8 rounded-3xl border border-slate-100">
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <FileText size={18} className="text-[#0A2C5E]" />
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Interaction Script</label>
+                    </div>
+                    <textarea 
+                      required
+                      value={newCampaign.script}
+                      onChange={e => setNewCampaign({...newCampaign, script: e.target.value})}
+                      className="w-full h-44 rounded-2xl border-slate-200 text-sm py-4 px-5 focus:ring-2 focus:ring-[#0A2C5E] focus:border-transparent transition-all shadow-sm italic bg-white"
+                      placeholder="Enter the AI calling script... Use {{variable}} for dynamic fields."
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <Plus size={18} className="text-emerald-500" />
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Script Variables</label>
+                      </div>
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          const nextIndex = newCampaign.variables.length + 1;
+                          setNewCampaign({
+                            ...newCampaign, 
+                            variables: [...newCampaign.variables, ''],
+                            script: newCampaign.script + ` {{${nextIndex}}}`
+                          });
+                        }}
+                        className="text-[10px] font-black text-[#0A2C5E] hover:text-[#D71920] uppercase tracking-widest bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm transition-all"
+                      >
+                        + Add Variable
+                      </button>
+                    </div>
+                    <div className="space-y-3 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                      {newCampaign.variables.map((v, i) => (
+                        <div key={i} className="flex gap-3 animate-in slide-in-from-right-4 duration-300">
+                          <input 
+                            type="text" 
+                            value={v}
+                            onChange={e => {
+                              const v2 = [...newCampaign.variables];
+                              v2[i] = e.target.value;
+                              setNewCampaign({...newCampaign, variables: v2});
+                            }}
+                            className="flex-1 rounded-xl border-slate-200 text-sm py-2.5 px-4 shadow-sm focus:ring-2 focus:ring-[#0A2C5E] bg-white"
+                            placeholder="e.g. customer_name"
+                          />
+                          {newCampaign.variables.length > 1 && (
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                const v2 = newCampaign.variables.filter((_, idx) => idx !== i);
+                                setNewCampaign({...newCampaign, variables: v2});
+                              }}
+                              className="p-2 text-slate-300 hover:text-rose-500 transition-colors"
+                            >
+                              <Plus size={18} className="rotate-45" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
-              <button type="submit" className="w-full py-4 bg-[#D71920] text-white rounded-xl text-sm font-black uppercase tracking-widest shadow-xl hover:bg-rose-700 transition-all active:scale-[0.98] mt-4">
-                Launch Campaign
+
+              <button type="submit" className="w-full py-5 bg-[#0A2C5E] text-white rounded-2xl text-base font-black uppercase tracking-[0.2em] shadow-2xl shadow-[#0A2C5E]/20 hover:bg-[#0c3875] hover:-translate-y-0.5 transition-all active:scale-[0.98] mt-4">
+                Create Campaign
               </button>
             </form>
           </div>

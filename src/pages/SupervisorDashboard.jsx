@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { 
   Radio, 
@@ -46,7 +46,8 @@ import {
   LineChart, 
   Cell,
   AreaChart,
-  Area
+  Area,
+  ReferenceLine
 } from 'recharts';
 import { supervisorAgents, supervisorKpis, campaignData } from '../data/mockData';
 import { AppContext } from '../context/appContextObject';
@@ -125,6 +126,68 @@ const criticalIssuesData = [
   { id: 'ISS-004', campaign: 'Support Desk', agent: 'Nisha Kapoor', type: 'Extended Silence', timeOpen: '1 min', priority: 'P3', status: 'Pending' },
 ];
 
+const generate7DayData = (base, variance, type = 'count') => {
+  return Array.from({ length: 7 }, (_, i) => ({
+    day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i],
+    value: type === 'percent' 
+      ? Math.min(100, Math.max(0, base + (Math.random() * variance * 2 - variance)))
+      : Math.max(0, Math.round(base + (Math.random() * variance * 2 - variance)))
+  }));
+};
+
+const campaignTrendData = {
+  'ib-1': { // Grievance Redressal
+    calls: generate7DayData(150, 30),
+    resolution: generate7DayData(88, 10, 'percent'),
+    critical: generate7DayData(5, 4),
+    trend: 'up'
+  },
+  'ib-2': { // Customer Service
+    calls: generate7DayData(220, 40),
+    resolution: generate7DayData(92, 5, 'percent'),
+    critical: generate7DayData(2, 2),
+    trend: 'up'
+  },
+  'ib-3': { // Sales Enquiry
+    calls: generate7DayData(180, 25),
+    resolution: generate7DayData(85, 12, 'percent'),
+    critical: generate7DayData(3, 3),
+    trend: 'down'
+  },
+  'ob-1': { // Pre-sales
+    calls: generate7DayData(400, 80),
+    connect: generate7DayData(45, 10, 'percent'),
+    conversions: generate7DayData(12, 5),
+    trend: 'up'
+  },
+  'ob-2': { // Payment Followup
+    calls: generate7DayData(350, 60),
+    connect: generate7DayData(52, 8, 'percent'),
+    conversions: generate7DayData(8, 4),
+    trend: 'down'
+  },
+  'ob-3': { // Festive Offers
+    calls: generate7DayData(500, 100),
+    connect: generate7DayData(38, 15, 'percent'),
+    conversions: generate7DayData(25, 10),
+    trend: 'up'
+  }
+};
+
+const inboundSummaryData = Array.from({ length: 7 }, (_, i) => ({
+  day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i],
+  'Grievance Redressal': Math.round(82 + Math.random() * 12),
+  'Customer Service': Math.round(88 + Math.random() * 8),
+  'Sales Enquiry': Math.round(75 + Math.random() * 15),
+}));
+
+const outboundSummaryData = Array.from({ length: 7 }, (_, i) => ({
+  day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i],
+  'Pre-sales': Math.round(40 + Math.random() * 10),
+  'Payment Followup': Math.round(48 + Math.random() * 12),
+  'Festive Offers': Math.round(35 + Math.random() * 20),
+}));
+
 const activityFeed = [
   { id: 1, text: "Rahul Kumar converted lead on Adani Realty One", time: "2 min ago", type: "success" },
   { id: 2, text: "New critical issue raised in Grievance Redressal", time: "5 min ago", type: "error" },
@@ -138,32 +201,129 @@ const activityFeed = [
   { id: 10, text: "Backup completed successfully", time: "5 hours ago", type: "success" },
 ];
 
-const Sparkline = ({ data, color = "#3b82f6" }) => {
-  const min = Math.min(...data);
-  const max = Math.max(...data);
-  const range = max - min;
-  const width = 100;
-  const height = 30;
-  const points = data.map((val, i) => {
-    const x = (i / (data.length - 1)) * width;
-    const y = height - ((val - min) / range) * height;
-    return `${x},${y}`;
-  }).join(' ');
-
+const CampaignSparkline = ({ data, trend = 'up', color }) => {
+  const chartColor = color || (trend === 'up' ? '#10b981' : '#f43f5e');
   return (
-    <svg width={width} height={height} className="overflow-visible">
-      <polyline
-        fill="none"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        points={points}
-      />
-    </svg>
+    <div className="w-24 h-10">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data}>
+          <defs>
+            <linearGradient id={`sparkline-${trend}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={chartColor} stopOpacity={0.3}/>
+              <stop offset="95%" stopColor={chartColor} stopOpacity={0}/>
+            </linearGradient>
+          </defs>
+          <Tooltip 
+            content={({ active, payload }) => {
+              if (active && payload && payload.length) {
+                return (
+                  <div className="bg-white border border-slate-100 shadow-xl rounded-lg p-2 text-[10px] font-black text-slate-600">
+                    {payload[0].value}
+                  </div>
+                );
+              }
+              return null;
+            }}
+          />
+          <Area 
+            type="monotone" 
+            dataKey="value" 
+            stroke={chartColor} 
+            strokeWidth={2} 
+            fillOpacity={1} 
+            fill={`url(#sparkline-${trend})`} 
+            dot={false}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
   );
 };
 
+const CampaignDetailPanel = ({ campaign, type = 'inbound' }) => {
+  const id = campaign.id;
+  const data = campaignTrendData[id] || (type === 'inbound' ? campaignTrendData['ib-1'] : campaignTrendData['ob-1']);
+  const mainColor = type === 'inbound' ? '#3b82f6' : '#8b5cf6';
+  
+  return (
+    <div className="bg-slate-50/50 p-6 border-y border-slate-100 animate-in slide-in-from-top duration-300">
+      <div className="grid grid-cols-3 gap-6 h-[160px]">
+        {/* Panel A: Calls Volume */}
+        <div className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm flex flex-col">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Call Volume (7D)</span>
+            <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">Avg: {Math.round(data.calls.reduce((acc, curr) => acc + curr.value, 0) / 7)}</span>
+          </div>
+          <div className="flex-1 min-h-0">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data.calls}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="day" hide />
+                <YAxis hide domain={['auto', 'auto']} />
+                <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '10px' }} />
+                <Bar dataKey="value" fill={mainColor} radius={[4, 4, 0, 0]} barSize={20} />
+                <ReferenceLine y={data.calls.reduce((acc, curr) => acc + curr.value, 0) / 7} stroke="#94a3b8" strokeDasharray="3 3" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Panel B: Resolution / Connect Rate */}
+        <div className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm flex flex-col">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              {type === 'inbound' ? 'Resolution % Trend' : 'Connect Rate % Trend'}
+            </span>
+            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">Target: 90%</span>
+          </div>
+          <div className="flex-1 min-h-0">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={type === 'inbound' ? data.resolution : data.connect}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="day" hide />
+                <YAxis hide domain={[0, 100]} />
+                <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '10px' }} />
+                <ReferenceLine y={90} stroke="#ef4444" strokeDasharray="3 3" label={{ position: 'right', value: '90%', fill: '#ef4444', fontSize: 8 }} />
+                <Line 
+                  type="monotone" 
+                  dataKey="value" 
+                  stroke={mainColor} 
+                  strokeWidth={3} 
+                  dot={({ cx, cy, payload }) => (
+                    <circle key={payload.day} cx={cx} cy={cy} r={3} fill={payload.value < 90 ? '#ef4444' : mainColor} stroke="white" strokeWidth={1} />
+                  )}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Panel C: Critical Issues / Conversions */}
+        <div className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm flex flex-col">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              {type === 'inbound' ? 'Critical Issues Timeline' : 'Daily Conversions'}
+            </span>
+          </div>
+          <div className="flex-1 min-h-0">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={type === 'inbound' ? data.critical : data.conversions}>
+                <XAxis dataKey="day" hide />
+                <YAxis hide />
+                <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '10px' }} />
+                <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={20}>
+                  {(type === 'inbound' ? data.critical : data.conversions).map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={type === 'inbound' ? (entry.value > 3 ? '#ef4444' : '#10b981') : '#10b981'} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const agentStatusData = [
   { id: 1, name: 'Rahul Kumar', status: 'On Call', detail: 'On call · Priya Mehta · 4:22', color: 'bg-amber-500', sentiment: '🙂' },
@@ -305,31 +465,6 @@ const SupervisorDashboard = () => {
         </div>
         
         <div className="flex items-center gap-4">
-          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
-            {['Today', 'This Week', 'This Month'].map(range => (
-              <button
-                key={range}
-                onClick={() => setSelectedTimeRange(range)}
-                className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${selectedTimeRange === range ? 'bg-white text-[#0A2C5E] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-              >
-                {range}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
-            {['Morning', 'Evening', 'Night'].map(shift => (
-              <button
-                key={shift}
-                onClick={() => setSelectedShift(shift)}
-                className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${selectedShift === shift ? 'bg-[#0A2C5E] text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-              >
-                {shift}
-              </button>
-            ))}
-          </div>
-
-          <div className="h-8 w-[1px] bg-slate-200 mx-2" />
 
           <button
             onClick={() => setShowCreateProject(true)}
@@ -417,7 +552,10 @@ const SupervisorDashboard = () => {
               </div>
               {kpi.sparkline && (
                 <div className="mb-1">
-                  <Sparkline data={kpi.sparkline} color={idx === 0 ? "#10b981" : "#3b82f6"} />
+                  <CampaignSparkline 
+                    data={kpi.sparkline.map((val, i) => ({ day: i, value: val }))} 
+                    color={idx === 0 ? "#10b981" : "#3b82f6"} 
+                  />
                 </div>
               )}
             </div>
@@ -432,14 +570,7 @@ const SupervisorDashboard = () => {
             <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
               <TrendingUp size={18} />
             </div>
-            <h2 className="text-lg font-black text-[#0A2C5E] tracking-tight">Campaign Overview</h2>
-          </div>
-          <div className="flex items-center bg-white border border-slate-200 p-1 rounded-xl shadow-sm">
-            {['Today', 'Week', 'Month'].map(f => (
-              <button key={f} className="px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-700 transition-all">
-                {f}
-              </button>
-            ))}
+            <h2 className="text-lg font-black text-[#0A2C5E] tracking-tight">Project Overview</h2>
           </div>
         </div>
 
@@ -492,7 +623,7 @@ const SupervisorDashboard = () => {
         {/* 2B: Full Width Grouped Bar Chart */}
         <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm h-[450px] flex flex-col">
           <div className="flex justify-between items-center mb-8">
-            <h3 className="text-sm font-bold text-[#0A2C5E]">Campaign Performance This Month</h3>
+            <h3 className="text-sm font-bold text-[#0A2C5E]">Project Performance This Month</h3>
             <div className="flex gap-4 items-center">
                <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400"><div className="h-2 w-2 rounded-full bg-blue-500" /> Calls</div>
                <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400"><div className="h-2 w-2 rounded-full bg-indigo-500" /> Interested</div>
@@ -587,147 +718,216 @@ const SupervisorDashboard = () => {
 
         <div className="p-0 overflow-x-auto">
           {activeTab === 'inbound' && (
-            <table className="w-full text-left">
-              <thead className="bg-slate-50/80">
-                <tr>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Campaign Name</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Health</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Resolution %</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Critical</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Calls Today</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {campaignData.inbound.map((campaign) => (
-                  <>
-                    <tr 
-                      key={campaign.id} 
-                      onClick={() => setExpandedCampaign(expandedCampaign === campaign.id ? null : campaign.id)} 
-                      className="group hover:bg-slate-50 transition-colors cursor-pointer"
-                    >
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-blue-100 text-blue-600">
-                            <PhoneIncoming size={16} />
-                          </div>
-                          <div>
-                            <span className="text-sm font-bold text-slate-800">{campaign.title}</span>
-                            <div className="flex items-center gap-1 mt-0.5">
-                              <span className="text-[9px] font-bold text-slate-400 uppercase">Trend:</span>
-                              <Sparkline data={[10, 15, 8, 12, 14, 11, 16]} color="#3b82f6" />
+            <>
+              {/* Inbound Summary Chart */}
+              <div className="px-6 py-6 border-b border-slate-50 bg-slate-50/30">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-sm font-bold text-[#0A2C5E]">Resolution Rate — Last 7 Days</h3>
+                  <div className="flex gap-4">
+                    {['Grievance Redressal', 'Customer Service', 'Sales Enquiry'].map((camp, idx) => (
+                      <div key={camp} className="flex items-center gap-2">
+                        <div className={`h-2 w-2 rounded-full ${idx === 0 ? 'bg-blue-500' : idx === 1 ? 'bg-indigo-500' : 'bg-violet-500'}`} />
+                        <span className="text-[10px] font-bold text-slate-500">{camp}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="h-[120px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={inboundSummaryData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                      <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: '#94a3b8' }} />
+                      <YAxis domain={[60, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: '#94a3b8' }} />
+                      <Tooltip 
+                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
+                        itemStyle={{ fontSize: '10px', fontWeight: 'bold' }}
+                      />
+                      <Line type="monotone" dataKey="Grievance Redressal" stroke="#3b82f6" strokeWidth={3} dot={{ r: 3 }} />
+                      <Line type="monotone" dataKey="Customer Service" stroke="#6366f1" strokeWidth={3} dot={{ r: 3 }} />
+                      <Line type="monotone" dataKey="Sales Enquiry" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 3 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              <table className="w-full text-left">
+                <thead className="bg-slate-50/80">
+                  <tr>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Campaign Name</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Health</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Resolution %</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Critical</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Calls Today</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {campaignData.inbound.map((campaign, idx) => (
+                    <React.Fragment key={campaign.id}>
+                      <tr 
+                        onClick={() => setExpandedCampaign(expandedCampaign === campaign.id ? null : campaign.id)} 
+                        className={`group hover:bg-slate-50 transition-all cursor-pointer ${expandedCampaign === campaign.id ? 'bg-slate-50/80' : ''}`}
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-blue-100 text-blue-600">
+                              <PhoneIncoming size={16} />
+                            </div>
+                            <div className="flex items-center gap-6">
+                              <div className="min-w-[140px]">
+                                <span className="text-sm font-bold text-slate-800">{campaign.title}</span>
+                                <p className="text-[10px] font-medium text-slate-400 uppercase tracking-tighter">Click to view trends</p>
+                              </div>
+                              <CampaignSparkline 
+                                data={campaignTrendData[`ib-${idx+1}`]?.calls || generate7DayData(150, 30)} 
+                                trend={campaignTrendData[`ib-${idx+1}`]?.trend || 'up'}
+                              />
                             </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <div className="inline-flex items-center justify-center h-8 w-8 rounded-full border-2 border-emerald-100 bg-emerald-50 text-[10px] font-black text-emerald-600">
-                          {Math.floor(80 + Math.random() * 15)}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                            <div className={`h-full rounded-full ${
-                              campaign.resolutionRate > 85 ? 'bg-emerald-500' :
-                              campaign.resolutionRate > 70 ? 'bg-amber-500' : 'bg-rose-500'
-                            }`} style={{ width: `${campaign.resolutionRate}%` }} />
-                          </div>
-                          <span className="text-xs font-bold text-slate-600">{campaign.resolutionRate}%</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                         <span className={`text-sm font-bold ${campaign.criticalEscalations > 0 ? 'text-rose-600' : 'text-slate-400'}`}>
-                          {campaign.criticalEscalations}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <div className="flex flex-col items-center">
-                          <span className="text-sm font-bold text-slate-700">{campaign.callsToday}</span>
-                          <span className="text-[8px] font-bold text-emerald-500">↑ 14%</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                         <span className="px-2 py-1 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-700">Healthy</span>
-                      </td>
-                    </tr>
-                    {expandedCampaign === campaign.id && (
-                      <tr className="bg-slate-50/50">
-                        <td colSpan={6} className="px-6 py-4">
-                          <div className="grid grid-cols-4 gap-4">
-                            {[1, 2, 3, 4].map(i => (
-                              <div key={i} className="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold">A{i}</div>
-                                  <div>
-                                    <p className="text-[10px] font-bold text-slate-700">Agent Name {i}</p>
-                                    <p className="text-[8px] font-medium text-slate-400">12 Calls · 85% Res</p>
-                                  </div>
-                                </div>
-                                <ArrowRight size={12} className="text-slate-300" />
-                              </div>
-                            ))}
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <div className="inline-flex items-center justify-center h-8 w-8 rounded-full border-2 border-emerald-100 bg-emerald-50 text-[10px] font-black text-emerald-600">
+                            {Math.floor(80 + Math.random() * 15)}
                           </div>
                         </td>
+                        <td className="px-6 py-4 text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                              <div className={`h-full rounded-full ${
+                                campaign.resolutionRate > 85 ? 'bg-emerald-500' :
+                                campaign.resolutionRate > 70 ? 'bg-amber-500' : 'bg-rose-500'
+                              }`} style={{ width: `${campaign.resolutionRate}%` }} />
+                            </div>
+                            <span className="text-xs font-bold text-slate-600">{campaign.resolutionRate}%</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                           <span className={`text-sm font-bold ${campaign.criticalEscalations > 0 ? 'text-rose-600' : 'text-slate-400'}`}>
+                            {campaign.criticalEscalations}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <div className="flex flex-col items-center">
+                            <span className="text-sm font-bold text-slate-700">{campaign.callsToday}</span>
+                            <span className="text-[8px] font-bold text-emerald-500">↑ 14%</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                           <span className="px-2 py-1 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-700">Healthy</span>
+                        </td>
                       </tr>
-                    )}
-                  </>
-                ))}
-              </tbody>
-            </table>
+                      {expandedCampaign === campaign.id && (
+                        <tr>
+                          <td colSpan={6} className="p-0">
+                            <CampaignDetailPanel campaign={{...campaign, id: `ib-${idx+1}`}} type="inbound" />
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </tbody>
+              </table>
+            </>
           )}
 
           {activeTab === 'outbound' && (
-            <table className="w-full text-left">
-              <thead className="bg-slate-50/80">
-                <tr>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Campaign Name</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Health</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Connect Rate</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Conversions</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Efficiency</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {outboundCampaigns.map((campaign) => (
-                  <tr key={campaign.id} onClick={() => navigate(`/campaigns/outbound/${campaign.id}`)} className="group hover:bg-slate-50 transition-colors cursor-pointer">
-                    <td className="px-6 py-4 flex items-center gap-3">
-                        <div className="p-2 bg-purple-100 text-purple-600 rounded-lg"><PhoneOutgoing size={16} /></div>
-                        <div>
-                          <span className="text-sm font-bold text-slate-800">{campaign.title}</span>
-                          <div className="flex items-center gap-1 mt-0.5">
-                            <span className="text-[9px] font-bold text-slate-400 uppercase">Trend:</span>
-                            <Sparkline data={[8, 12, 10, 14, 18, 16, 20]} color="#a855f7" />
-                          </div>
-                        </div>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <div className="inline-flex items-center justify-center h-8 w-8 rounded-full border-2 border-purple-100 bg-purple-50 text-[10px] font-black text-purple-600">
-                        {Math.floor(75 + Math.random() * 20)}
+            <>
+              {/* Outbound Summary Chart */}
+              <div className="px-6 py-6 border-b border-slate-50 bg-slate-50/30">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-sm font-bold text-[#0A2C5E]">Connect Rate — Last 7 Days</h3>
+                  <div className="flex gap-4">
+                    {['Pre-sales', 'Payment Followup', 'Festive Offers'].map((camp, idx) => (
+                      <div key={camp} className="flex items-center gap-2">
+                        <div className={`h-2 w-2 rounded-full ${idx === 0 ? 'bg-purple-500' : idx === 1 ? 'bg-fuchsia-500' : 'bg-pink-500'}`} />
+                        <span className="text-[10px] font-bold text-slate-500">{camp}</span>
                       </div>
-                    </td>
-                    <td className="px-6 py-4">
-                       <div className="flex items-center gap-2">
-                        <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                          <div className="h-full bg-blue-500 rounded-full" style={{ width: `${campaign.connectRate}%` }} />
-                        </div>
-                        <span className="text-xs font-bold text-slate-600">{campaign.connectRate}%</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-center text-sm font-bold text-emerald-600">{campaign.conversions}</td>
-                    <td className="px-6 py-4 text-center text-xs font-bold text-slate-500">
-                      {campaign.callsMade > 0 ? ((campaign.conversions / campaign.callsMade) * 100).toFixed(1) : 0}%
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                       <button onClick={(e) => { e.stopPropagation(); startCalling(campaign.id); }} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${campaign.status === 'Calling' ? 'bg-emerald-100 text-emerald-700 animate-pulse' : 'bg-[#D71920] text-white hover:bg-rose-700'}`}>
-                        {campaign.status === 'Calling' ? 'Active' : 'Start'}
-                      </button>
-                    </td>
+                    ))}
+                  </div>
+                </div>
+                <div className="h-[120px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={outboundSummaryData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                      <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: '#94a3b8' }} />
+                      <YAxis domain={[20, 80]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: '#94a3b8' }} />
+                      <Tooltip 
+                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
+                        itemStyle={{ fontSize: '10px', fontWeight: 'bold' }}
+                      />
+                      <Line type="monotone" dataKey="Pre-sales" stroke="#a855f7" strokeWidth={3} dot={{ r: 3 }} />
+                      <Line type="monotone" dataKey="Payment Followup" stroke="#d946ef" strokeWidth={3} dot={{ r: 3 }} />
+                      <Line type="monotone" dataKey="Festive Offers" stroke="#ec4899" strokeWidth={3} dot={{ r: 3 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              <table className="w-full text-left">
+                <thead className="bg-slate-50/80">
+                  <tr>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Campaign Name</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Health</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Connect Rate</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Conversions</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Efficiency</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {outboundCampaigns.map((campaign, idx) => (
+                    <React.Fragment key={campaign.id}>
+                      <tr 
+                        onClick={() => setExpandedCampaign(expandedCampaign === campaign.id ? null : campaign.id)} 
+                        className={`group hover:bg-slate-50 transition-all cursor-pointer ${expandedCampaign === campaign.id ? 'bg-slate-50/80' : ''}`}
+                      >
+                        <td className="px-6 py-4 flex items-center gap-3">
+                            <div className="p-2 bg-purple-100 text-purple-600 rounded-lg"><PhoneOutgoing size={16} /></div>
+                            <div className="flex items-center gap-6">
+                              <div className="min-w-[140px]">
+                                <span className="text-sm font-bold text-slate-800">{campaign.title}</span>
+                                <p className="text-[10px] font-medium text-slate-400 uppercase tracking-tighter">Click to view trends</p>
+                              </div>
+                              <CampaignSparkline 
+                                data={campaignTrendData[`ob-${idx+1}`]?.calls || generate7DayData(400, 80)} 
+                                trend={campaignTrendData[`ob-${idx+1}`]?.trend || 'up'}
+                                color="#a855f7"
+                              />
+                            </div>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <div className="inline-flex items-center justify-center h-8 w-8 rounded-full border-2 border-purple-100 bg-purple-50 text-[10px] font-black text-purple-600">
+                            {Math.floor(75 + Math.random() * 20)}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                           <div className="flex items-center gap-2">
+                            <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                              <div className="h-full bg-blue-500 rounded-full" style={{ width: `${campaign.connectRate}%` }} />
+                            </div>
+                            <span className="text-xs font-bold text-slate-600">{campaign.connectRate}%</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-center text-sm font-bold text-emerald-600">{campaign.conversions}</td>
+                        <td className="px-6 py-4 text-center text-xs font-bold text-slate-500">
+                          {campaign.callsMade > 0 ? ((campaign.conversions / campaign.callsMade) * 100).toFixed(1) : 0}%
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                           <button onClick={(e) => { e.stopPropagation(); startCalling(campaign.id); }} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${campaign.status === 'Calling' ? 'bg-emerald-100 text-emerald-700 animate-pulse' : 'bg-[#D71920] text-white hover:bg-rose-700'}`}>
+                            {campaign.status === 'Calling' ? 'Active' : 'Start'}
+                          </button>
+                        </td>
+                      </tr>
+                      {expandedCampaign === campaign.id && (
+                        <tr>
+                          <td colSpan={6} className="p-0">
+                            <CampaignDetailPanel campaign={{...campaign, id: `ob-${idx+1}`}} type="outbound" />
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </tbody>
+              </table>
+            </>
           )}
 
           {activeTab === 'all' && (
@@ -872,14 +1072,20 @@ const SupervisorDashboard = () => {
                 <p className="text-[9px] font-black text-blue-400 uppercase mb-1">Weekly Trend</p>
                 <div className="flex items-end justify-between">
                   <span className="text-lg font-bold text-blue-700">+14.2%</span>
-                  <Sparkline data={[12, 15, 14, 18, 16, 20, 22]} color="#3b82f6" />
+                  <CampaignSparkline 
+                    data={[12, 15, 14, 18, 16, 20, 22].map((val, i) => ({ day: i, value: val }))} 
+                    color="#3b82f6" 
+                  />
                 </div>
               </div>
               <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
                 <p className="text-[9px] font-black text-emerald-400 uppercase mb-1">Efficiency Score</p>
                 <div className="flex items-end justify-between">
                   <span className="text-lg font-bold text-emerald-700">92%</span>
-                  <Sparkline data={[85, 88, 87, 90, 89, 92, 92]} color="#10b981" />
+                  <CampaignSparkline 
+                    data={[85, 88, 87, 90, 89, 92, 92].map((val, i) => ({ day: i, value: val }))} 
+                    color="#10b981" 
+                  />
                 </div>
               </div>
             </div>

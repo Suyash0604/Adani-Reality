@@ -375,6 +375,7 @@ const SupervisorDashboard = () => {
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [activeTab, setActiveTab] = useState('inbound');
   const [showCallsBreakdown, setShowCallsBreakdown] = useState(false);
+  const [activeAction, setActiveAction] = useState(null); // { id, type: 'assign' | 'escalate' }
   const [agentsData, setAgentsData] = useState(supervisorAgents);
   const [selectedTimeRange, setSelectedTimeRange] = useState('Today');
   const [selectedShift, setSelectedShift] = useState('Morning');
@@ -1168,10 +1169,70 @@ const SupervisorDashboard = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button className="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-slate-200">Assign</button>
-                      <button className="px-3 py-1 bg-amber-100 text-amber-700 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-amber-200">Escalate</button>
-                      <button className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-emerald-200">Resolve</button>
+                    <div className="flex items-center justify-end gap-2 relative">
+                      {/* Assign Button & Dropdown */}
+                      <div className="relative">
+                        <button 
+                          onClick={() => setActiveAction(activeAction?.id === issue.id && activeAction?.type === 'assign' ? null : { id: issue.id, type: 'assign' })}
+                          className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                            activeAction?.id === issue.id && activeAction?.type === 'assign' 
+                            ? 'bg-blue-600 text-white shadow-lg' 
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                          }`}
+                        >
+                          Assign
+                        </button>
+                        
+                        {activeAction?.id === issue.id && activeAction?.type === 'assign' && (
+                          <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-2xl border border-slate-100 z-[50] py-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                            <p className="px-4 py-1.5 text-[8px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50 mb-1 text-left">Assign to Lead</p>
+                            {['Arjun Mehta (Lead)', 'Priya Sharma (QA)', 'Vikram Singh (Floor)', 'Anjali Goel (Compliance)'].map((lead) => (
+                              <button 
+                                key={lead}
+                                onClick={() => {
+                                  addToast(`Issue ${issue.id} assigned to ${lead}`, 'success');
+                                  setActiveAction(null);
+                                }}
+                                className="w-full text-left px-4 py-2 text-[10px] font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                              >
+                                {lead}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Escalate Button & Dropdown */}
+                      <div className="relative">
+                        <button 
+                          onClick={() => setActiveAction(activeAction?.id === issue.id && activeAction?.type === 'escalate' ? null : { id: issue.id, type: 'escalate' })}
+                          className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                            activeAction?.id === issue.id && activeAction?.type === 'escalate' 
+                            ? 'bg-amber-600 text-white shadow-lg' 
+                            : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                          }`}
+                        >
+                          Escalate
+                        </button>
+
+                        {activeAction?.id === issue.id && activeAction?.type === 'escalate' && (
+                          <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-2xl border border-slate-100 z-[50] py-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                            <p className="px-4 py-1.5 text-[8px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50 mb-1 text-left">Escalation Level</p>
+                            {['L2 Technical Support', 'Project Head - Adani', 'Quality Assurance Head', 'Executive Management'].map((level) => (
+                              <button 
+                                key={level}
+                                onClick={() => {
+                                  addToast(`Issue ${issue.id} escalated to ${level}`, 'warning');
+                                  setActiveAction(null);
+                                }}
+                                className="w-full text-left px-4 py-2 text-[10px] font-bold text-slate-700 hover:bg-amber-50 hover:text-amber-700 transition-colors"
+                              >
+                                {level}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </td>
                 </tr>

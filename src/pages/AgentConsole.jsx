@@ -237,21 +237,28 @@ const AgentConsole = () => {
                 </div>
 
                 {/* Recent Activity Mini-list */}
-                <div className="mt-12 text-left bg-slate-50 rounded-2xl p-6 border border-slate-100">
-                   <div className="flex items-center gap-2 mb-4">
-                      <History size={14} className="text-slate-400" />
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Recent Activity</span>
-                   </div>
-                   <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                         <div>
-                            <p className="text-xs font-bold text-slate-700">Last Lead: Priya Mehta</p>
-                            <p className="text-[10px] text-slate-400 font-medium">Site Visit Booked • 12m ago</p>
-                         </div>
-                         <button className="text-[10px] font-black text-blue-600 hover:underline uppercase">Details</button>
-                      </div>
-                   </div>
-                </div>
+                {callRecords && callRecords.length > 0 && (
+                  <div className="mt-12 text-left bg-slate-50 rounded-2xl p-6 border border-slate-100">
+                    <div className="flex items-center gap-2 mb-4">
+                        <History size={14} className="text-slate-400" />
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Recent Activity</span>
+                    </div>
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-xs font-bold text-slate-700">Last Lead: {callRecords[0].customer}</p>
+                              <p className="text-[10px] text-slate-400 font-medium">{callRecords[0].outcome} • {callRecords[0].date}</p>
+                            </div>
+                            <button 
+                              onClick={() => navigate(`/qa/${callRecords[0].id}`)}
+                              className="text-[10px] font-black text-blue-600 hover:underline uppercase"
+                            >
+                              Details
+                            </button>
+                        </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           ) : (

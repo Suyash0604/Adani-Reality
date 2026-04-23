@@ -310,6 +310,7 @@ const AgentDashboard = () => {
                 <thead className="sticky top-0 bg-slate-50 border-b border-slate-100 z-10">
                   <tr>
                     <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Customer</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Type</th>
                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Primary Issue</th>
                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Duration</th>
                     <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Final Status</th>
@@ -318,16 +319,21 @@ const AgentDashboard = () => {
                 <tbody className="divide-y divide-slate-50">
                   {mockRecentCalls.map((call) => (
                     <tr key={call.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="px-8 py-4">
+                      <td className="px-8 py-5">
                          <span className="text-sm font-bold text-slate-800">{call.customer}</span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-5 text-center">
+                         <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tight ${call.type === 'Inbound' ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-500'}`}>
+                           {call.type}
+                         </span>
+                      </td>
+                      <td className="px-6 py-5">
                          <span className="text-xs font-medium text-slate-600">{call.issue}</span>
                       </td>
-                      <td className="px-6 py-4 text-center">
+                      <td className="px-6 py-5 text-center">
                          <span className="text-xs font-bold text-slate-500">{call.duration}</span>
                       </td>
-                      <td className="px-8 py-4 text-right">
+                      <td className="px-8 py-5 text-right">
                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ${
                             call.status === 'Resolved' ? 'bg-emerald-50 text-emerald-600' :
                             call.status === 'Escalated' ? 'bg-rose-50 text-rose-600' : 'bg-amber-50 text-amber-600'

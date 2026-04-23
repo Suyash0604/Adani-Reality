@@ -1,19 +1,13 @@
-import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
-  Bell, 
   LogOut, 
   LayoutDashboard, 
   Phone, 
   History, 
   ShieldAlert,
   User, 
-  ChevronRight,
-  Menu,
-  ChevronLeft,
-  Settings,
-  HelpCircle,
-  Search
+  Search,
+  ChevronLeft
 } from 'lucide-react';
 import { useAuth } from '../../context/useAuth';
 import { useApp } from '../../context/useApp';
@@ -56,52 +50,34 @@ const AppShell = ({ title, children }) => {
              <div className="h-4 w-px bg-slate-200" />
              <h1 className="text-sm font-black text-[#0A2C5E] uppercase tracking-[0.15em]">{title}</h1>
           </div>
-
-          {/* SEARCH BAR - MODERN TOUCH */}
-          <div className="hidden md:flex items-center bg-slate-50 border border-slate-100 rounded-full px-4 py-1.5 w-80 group focus-within:bg-white focus-within:border-blue-200 transition-all">
-             <Search size={14} className="text-slate-400 group-focus-within:text-[#0A2C5E]" />
-             <input 
-               type="text" 
-               placeholder="Search properties, leads..." 
-               className="bg-transparent border-none outline-none px-3 text-xs font-medium text-slate-600 placeholder:text-slate-300 w-full"
-             />
-          </div>
         </div>
 
         <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2">
-             <button className="h-10 w-10 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-50 hover:text-[#0A2C5E] transition-all relative">
-                <Bell size={18} />
-                <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white" />
-             </button>
-             <button className="h-10 w-10 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-50 hover:text-[#0A2C5E] transition-all">
-                <HelpCircle size={18} />
-             </button>
-          </div>
-
-          <div className="h-8 w-px bg-slate-100" />
-
-          {/* USER PROFILE - MODERN CLEAN */}
-          <div className="flex items-center gap-3 group cursor-pointer">
+          {/* USER PROFILE & LOGOUT */}
+          <div className="flex items-center gap-4 group">
              <div className="text-right hidden sm:block">
                 <p className="text-xs font-black text-[#0A2C5E] leading-tight">{user?.name}</p>
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{user?.role}</p>
              </div>
-             <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 flex items-center justify-center text-[#0A2C5E] shadow-sm overflow-hidden group-hover:shadow-md transition-all">
+             <div className="h-10 w-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-[#0A2C5E] shadow-sm">
                 <User size={20} />
              </div>
+             
+             <div className="h-8 w-px bg-slate-100" />
+             
              <button
                onClick={logout}
-               className="p-2 rounded-lg text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all"
+               className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 transition-all group"
              >
                <LogOut size={16} />
+               <span className="text-[10px] font-black uppercase tracking-widest">Logout</span>
              </button>
           </div>
         </div>
       </header>
 
       <div className="flex flex-1 overflow-hidden relative">
-        {/* --- SIDEBAR - MODERN MINIMAL --- */}
+        {/* --- SIDEBAR --- */}
         <aside 
           className={`h-full ${isExpanded ? 'w-64' : 'w-20'} bg-white border-r border-slate-50 flex flex-col transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] z-40`}
         >
@@ -109,7 +85,7 @@ const AppShell = ({ title, children }) => {
           <div className="p-4 border-b border-slate-50">
              <button 
                onClick={() => setIsExpanded(!isExpanded)}
-               className="w-full flex items-center justify-center h-10 rounded-xl text-[#0A2C5E] bg-blue-50/50 hover:bg-blue-50 transition-all group"
+               className="w-full flex items-center justify-center h-10 rounded-xl text-[#0A2C5E] bg-blue-50/50 hover:bg-blue-50 transition-all"
              >
                 <div className={`transition-transform duration-500 ${isExpanded ? 'rotate-0' : 'rotate-180'}`}>
                   <ChevronLeft size={18} />
@@ -118,7 +94,7 @@ const AppShell = ({ title, children }) => {
           </div>
 
           {/* NAV ITEMS */}
-          <div className="flex-1 px-4 py-8 space-y-2 overflow-y-auto scrollbar-hide">
+          <div className="flex-1 px-4 py-8 space-y-2">
             {navItems.map((item) => {
               const active = location.pathname.startsWith(item.to);
               const Icon = item.icon;
@@ -139,15 +115,11 @@ const AppShell = ({ title, children }) => {
                     {item.label}
                   </span>
                   
-                  {/* Active Indicator Pin */}
-                  {active && (
-                    <div className="absolute left-0 w-1 h-4 bg-white rounded-r-full my-auto inset-y-0" />
-                  )}
-
-                  {/* Tooltip for collapsed state */}
+                  {/* Tooltip for collapsed state (Show name on hover) */}
                   {!isExpanded && (
-                    <div className="absolute left-full ml-4 px-3 py-1.5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all pointer-events-none z-50 shadow-2xl">
+                    <div className="absolute left-full ml-2 px-4 py-2.5 bg-[#0A2C5E] text-white text-[11px] font-black uppercase tracking-[0.15em] rounded-xl opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 transition-all duration-150 pointer-events-none z-[100] shadow-[0_10px_30px_-5px_rgba(10,44,94,0.3)] whitespace-nowrap border border-white/10">
                       {item.label}
+                      <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-[#0A2C5E] rotate-45 border-l border-b border-white/10" />
                     </div>
                   )}
                 </Link>
@@ -155,7 +127,9 @@ const AppShell = ({ title, children }) => {
             })}
           </div>
 
-          {/* BOTTOM CONTROLS (Empty since settings removed) */}
+          <div className="p-4 border-t border-slate-50">
+             {/* Bottom space preserved for future use or purely for layout balance */}
+          </div>
         </aside>
 
         {/* --- MAIN CONTENT AREA --- */}

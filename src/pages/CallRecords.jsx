@@ -298,6 +298,7 @@ const CallRecords = () => {
                 <thead className="bg-slate-50 border-b border-slate-100">
                   <tr>
                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Interaction</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Type</th>
                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Agent</th>
                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Duration</th>
                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Sentiment</th>
@@ -317,6 +318,11 @@ const CallRecords = () => {
                                 <span className="px-1.5 py-0.5 bg-amber-50 text-amber-600 rounded text-[8px] font-black uppercase tracking-tight">💰 Price Issue</span>
                              )}
                           </div>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                           <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tight ${row.type === 'Inbound' ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-500'}`}>
+                             {row.type || 'Outbound'}
+                           </span>
                         </td>
                         <td className="px-6 py-4 text-xs font-bold text-slate-600">{row.agent}</td>
                         <td className="px-6 py-4 text-xs font-bold text-slate-500">{row.duration}</td>

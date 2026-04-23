@@ -57,6 +57,18 @@ export const AppProvider = ({ children }) => {
     breakdown: defaultQaBreakdown,
     softSkills: defaultSoftSkills,
   });
+  const defaultTranscript = [
+    { sender: 'agent', text: 'Good morning! Thank you for calling Adani Realty. I am Riya, how can I assist you today?' },
+    { sender: 'customer', text: 'Hi Riya, I was looking at the Adani Western Heights project. I wanted to know about the current availability.' },
+    { sender: 'agent', text: 'Great choice! Western Heights is one of our most premium projects in Mumbai. We have a few 3 and 4 BHK units available. Are you looking for a specific floor?' },
+    { sender: 'customer', text: 'I prefer higher floors. Also, what is the proximity to the airport?' },
+    { sender: 'agent', text: 'Higher floors offer a stunning view of the city. Regarding the airport, it is just a 15-minute drive from the project. Very convenient for frequent flyers.' },
+    { sender: 'customer', text: 'That sounds good. Can you share the pricing details?' },
+    { sender: 'agent', text: 'Certainly! I will send the detailed brochure and pricing sheet to your WhatsApp right away. Would you like to schedule a site visit for this weekend?' },
+    { sender: 'customer', text: 'Yes, Saturday morning works for me.' },
+    { sender: 'agent', text: 'Perfect. I have scheduled your visit for Saturday at 11:30 AM. Looking forward to seeing you there!' }
+  ];
+
   const [callRecords, setCallRecords] = useState([
     {
       id: 'seed-1',
@@ -69,8 +81,9 @@ export const AppProvider = ({ children }) => {
       sentiment: 'Positive',
       score: 84,
       outcome: 'Visit Booked',
+      type: 'Outbound',
       summary: 'Rohan Nair discussed Adani Western Heights - 4 BHK. Visit booked.',
-      transcript: [],
+      transcript: defaultTranscript,
       sentimentProgress: 84,
     },
     {
@@ -85,7 +98,7 @@ export const AppProvider = ({ children }) => {
       score: 72,
       outcome: 'Follow-up',
       summary: 'Sneha Desai discussed Adani Codename Capital - 2 BHK. Needs follow-up.',
-      transcript: [],
+      transcript: defaultTranscript,
       sentimentProgress: 72,
     },
     {
@@ -100,7 +113,7 @@ export const AppProvider = ({ children }) => {
       score: 91,
       outcome: 'Visit Booked',
       summary: 'High quality interaction. Customer very satisfied with 3BHK pricing.',
-      transcript: [],
+      transcript: defaultTranscript,
       sentimentProgress: 91,
     },
     {
@@ -115,7 +128,7 @@ export const AppProvider = ({ children }) => {
       score: 58,
       outcome: 'Escalated',
       summary: 'Customer had complaints about previous site visit experience.',
-      transcript: [],
+      transcript: defaultTranscript,
       sentimentProgress: 58,
     },
     {
@@ -130,7 +143,7 @@ export const AppProvider = ({ children }) => {
       score: 88,
       outcome: 'Visit Booked',
       summary: 'Follow up on payment plan. Successful site visit scheduled.',
-      transcript: [],
+      transcript: defaultTranscript,
       sentimentProgress: 88,
     },
     {
@@ -144,9 +157,42 @@ export const AppProvider = ({ children }) => {
       sentiment: 'Positive',
       score: 86,
       outcome: 'Visit Booked',
+      type: 'Outbound',
       summary: 'Follow up on 2 BHK requirement. Visit booked for next Tuesday.',
-      transcript: [],
+      transcript: defaultTranscript,
       sentimentProgress: 86,
+    },
+    {
+      id: 'seed-7',
+      date: '20/04/2026',
+      time: '10:15 AM',
+      agent: 'Riya Sharma',
+      customer: 'Amit Shah',
+      duration: '05m 22s',
+      durationSeconds: 322,
+      sentiment: 'Positive',
+      score: 79,
+      outcome: 'Resolved',
+      type: 'Inbound',
+      summary: 'Inbound enquiry about parking slot allocation rules.',
+      transcript: defaultTranscript,
+      sentimentProgress: 79,
+    },
+    {
+      id: 'seed-8',
+      date: '20/04/2026',
+      time: '03:45 PM',
+      agent: 'Rahul Varma',
+      customer: 'Karan Singh',
+      duration: '04m 30s',
+      durationSeconds: 270,
+      sentiment: 'Neutral',
+      score: 65,
+      outcome: 'Resolved',
+      type: 'Outbound',
+      summary: 'Outbound payment reminder for Adani Atelier Greens.',
+      transcript: defaultTranscript,
+      sentimentProgress: 65,
     }
   ]);
   const [visitBooked, setVisitBooked] = useState(false);
@@ -292,6 +338,7 @@ export const AppProvider = ({ children }) => {
             customer: activeCustomer.name,
             duration,
             durationSeconds,
+            type: callType === 'incoming' ? 'Inbound' : 'Outbound',
             outcome: visitBooked ? 'Visit Booked' : disposition || 'Follow-up',
             sentiment: sentimentFromTranscript(transcriptMessages),
             score: qa.total,

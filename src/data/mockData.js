@@ -254,9 +254,9 @@ export const campaignData = {
 };
 
 export const mockRecentCalls = [
-  { id: 'call-1', customer: 'Amit Shah', issue: 'Possession delay', duration: '05:22', status: 'Resolved', sentiment: '🙂' },
-  { id: 'call-2', customer: 'Sunita Rao', issue: 'Quality issue', duration: '08:45', status: 'Escalated', sentiment: '😐' },
-  { id: 'call-3', customer: 'Rajesh Kumar', issue: 'Parking allocation', duration: '03:15', status: 'In Progress', sentiment: '🙂' },
-  { id: 'call-4', customer: 'Priya Verma', issue: 'Document missing', duration: '12:10', status: 'Resolved', sentiment: '😐' },
-  { id: 'call-5', customer: 'Karan Singh', issue: 'Payment query', duration: '04:30', status: 'Resolved', sentiment: '🙂' },
+  { id: 'call-1', customer: 'Amit Shah', issue: 'Project Update', duration: '05:22', status: 'Resolved', sentiment: '🙂', type: 'Inbound' },
+  { id: 'call-2', customer: 'Sunita Rao', issue: 'Maintenance Feedback', duration: '08:45', status: 'Escalated', sentiment: '😐', type: 'Inbound' },
+  { id: 'call-3', customer: 'Rajesh Kumar', issue: 'Parking Slot Query', duration: '03:15', status: 'In Progress', sentiment: '🙂', type: 'Inbound' },
+  { id: 'call-4', customer: 'Priya Verma', issue: 'KYC Document Collection', duration: '12:10', status: 'In Progress', sentiment: '😐', type: 'Outbound' },
+  { id: 'call-5', customer: 'Karan Singh', issue: 'Payment Reminder', duration: '04:30', status: 'Resolved', sentiment: '🙂', type: 'Outbound' },
 ];

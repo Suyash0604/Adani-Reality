@@ -28,6 +28,7 @@ const AgentConsole = () => {
     lastCallSummary,
     resetCallSession,
     callRecords,
+    allProjects,
     incomingCall,
     acceptCall,
     triggerIncomingCall,
@@ -36,6 +37,7 @@ const AgentConsole = () => {
 
   const [muted, setMuted] = useState(false);
   const [showVisitModal, setShowVisitModal] = useState(false);
+  const [bookingDetails, setBookingDetails] = useState({ projectId: '', date: '', time: '' });
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [aiAnalyzing, setAiAnalyzing] = useState(false);
   const navigate = useNavigate();
@@ -336,28 +338,79 @@ const AgentConsole = () => {
       {/* Booking Modal */}
       {showVisitModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-6">
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-300">
-            <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mb-6">
-               <Target size={24} />
+          <div className="w-full max-w-md rounded-3xl bg-white overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
+            <div className="bg-amber-500 p-6 text-white flex items-center gap-4">
+              <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
+                 <Target size={24} />
+              </div>
+              <div>
+                <h3 className="text-lg font-black uppercase tracking-tight">Schedule Site Visit</h3>
+                <p className="text-xs text-white/80 font-bold uppercase tracking-widest">Confirm logistics for {activeCustomer?.name}</p>
+              </div>
             </div>
-            <h3 className="text-base font-black text-slate-800 uppercase tracking-tight mb-2">Book Site Visit</h3>
-            <p className="text-xs text-slate-500 leading-relaxed mb-6">
-              Confirm site visit for <strong>Saturday, 11:30 AM</strong>. Automation will handle WhatsApp confirmation.
-            </p>
-            <div className="flex gap-3">
-              <button
-                className="flex-1 rounded-2xl bg-blue-600 py-3.5 text-[10px] font-black uppercase tracking-widest text-white hover:bg-blue-700 shadow-lg shadow-blue-200"
-                onClick={() => {
-                  setVisitBooked(true);
-                  setDisposition('Visit booked - warm lead');
-                  setShowVisitModal(false);
-                }}
-              >
-                Confirm
-              </button>
-              <button onClick={() => setShowVisitModal(false)} className="px-6 py-3.5 rounded-2xl border border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                Cancel
-              </button>
+
+            <div className="p-8 space-y-6">
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Select Project Site</label>
+                <select 
+                  value={bookingDetails.projectId}
+                  onChange={(e) => setBookingDetails({...bookingDetails, projectId: e.target.value})}
+                  className="w-full rounded-2xl border-slate-200 text-sm py-3.5 px-4 focus:ring-2 focus:ring-amber-500 outline-none bg-slate-50"
+                >
+                  <option value="">Select a site...</option>
+                  {allProjects.map(p => (
+                    <option key={p.id} value={p.id}>{p.name} ({p.location})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Date</label>
+                  <input 
+                    type="date"
+                    value={bookingDetails.date}
+                    onChange={(e) => setBookingDetails({...bookingDetails, date: e.target.value})}
+                    className="w-full rounded-2xl border-slate-200 text-sm py-3 px-4 focus:ring-2 focus:ring-amber-500 outline-none bg-slate-50"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Time</label>
+                  <input 
+                    type="time"
+                    value={bookingDetails.time}
+                    onChange={(e) => setBookingDetails({...bookingDetails, time: e.target.value})}
+                    className="w-full rounded-2xl border-slate-200 text-sm py-3 px-4 focus:ring-2 focus:ring-amber-500 outline-none bg-slate-50"
+                  />
+                </div>
+              </div>
+
+              <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100">
+                <p className="text-[11px] font-medium text-amber-800 leading-relaxed">
+                  <strong>Note:</strong> Automated confirmation will be sent to the customer via WhatsApp once confirmed.
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  disabled={!bookingDetails.projectId || !bookingDetails.date || !bookingDetails.time}
+                  className="flex-1 rounded-2xl bg-amber-500 py-4 text-xs font-black uppercase tracking-widest text-white hover:bg-amber-600 shadow-xl shadow-amber-200 disabled:opacity-40 disabled:shadow-none transition-all active:scale-95"
+                  onClick={() => {
+                    const project = allProjects.find(p => p.id === bookingDetails.projectId);
+                    setVisitBooked(true);
+                    setDisposition(`Visit scheduled for ${project?.name} on ${bookingDetails.date} at ${bookingDetails.time}`);
+                    setShowVisitModal(false);
+                  }}
+                >
+                  Confirm Booking
+                </button>
+                <button 
+                  onClick={() => setShowVisitModal(false)} 
+                  className="px-8 py-4 rounded-2xl border border-slate-200 text-xs font-black uppercase tracking-widest text-slate-400 hover:bg-slate-50 transition-all"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         </div>

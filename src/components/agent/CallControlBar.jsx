@@ -134,14 +134,14 @@ const CallControlBar = ({
 
           <button
             onClick={onBookVisit}
-            className={`${btnBase} bg-amber-500 text-white hover:bg-amber-600 shadow-amber-200 shadow-lg`}
+            className={`${btnBase} bg-amber-500 text-white hover:bg-amber-600 shadow-amber-200 shadow-lg min-w-[140px] whitespace-nowrap`}
           >
             <CalendarPlus size={14} /> Book Visit
           </button>
 
           <button
             onClick={onEndCall}
-            className={`${btnBase} bg-rose-600 text-white hover:bg-rose-700 shadow-rose-200 shadow-lg`}
+            className={`${btnBase} bg-rose-600 text-white hover:bg-rose-700 shadow-rose-200 shadow-lg min-w-[140px] whitespace-nowrap`}
           >
             <PhoneOff size={14} /> End Call
           </button>

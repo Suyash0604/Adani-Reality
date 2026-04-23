@@ -974,7 +974,7 @@ const SupervisorDashboard = () => {
       {/* SECTION 4: AGENT STATUS + LEAD FUNNEL + ACTIVITY FEED */}
       <div className="grid grid-cols-12 gap-6 mb-8">
         {/* Left: Agent Performance Table (40%) */}
-        <section className="col-span-12 xl:col-span-5 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+        <section className="col-span-12 xl:col-span-7 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
           <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
             <h2 className="text-sm font-bold text-[#0A2C5E]">Agent Performance</h2>
             <button className="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline">Full Report</button>
@@ -1035,7 +1035,7 @@ const SupervisorDashboard = () => {
         </section>
 
         {/* Center: Lead Funnel + KPI sparklines (35%) */}
-        <section className="col-span-12 xl:col-span-4 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+        <section className="col-span-12 xl:col-span-5 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
           <div className="px-6 py-5 border-b border-slate-100">
             <h2 className="text-sm font-bold text-[#0A2C5E]">Lead Conversion Funnel</h2>
           </div>
@@ -1092,34 +1092,6 @@ const SupervisorDashboard = () => {
           </div>
         </section>
 
-        {/* Right: Real-time Activity (25%) */}
-        <section className="col-span-12 xl:col-span-3 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
-          <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
-            <h2 className="text-sm font-bold text-[#0A2C5E]">Live Activity</h2>
-            <div className="flex items-center gap-1.5">
-               <div className="h-2 w-2 rounded-full bg-rose-500 animate-ping" />
-               <span className="text-[9px] font-black text-rose-500 uppercase tracking-widest">Live</span>
-            </div>
-          </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 max-h-[500px]">
-            {activityFeed.map((item) => (
-              <div key={item.id} className="flex gap-3 group">
-                <div className={`mt-1 h-2 w-2 rounded-full flex-shrink-0 ${
-                  item.type === 'success' ? 'bg-emerald-500' :
-                  item.type === 'error' ? 'bg-rose-500' :
-                  item.type === 'warning' ? 'bg-amber-500' : 'bg-blue-500'
-                }`} />
-                <div className="flex flex-col gap-0.5">
-                  <p className="text-xs font-medium text-slate-700 leading-snug group-hover:text-slate-900 transition-colors">{item.text}</p>
-                  <span className="text-[9px] font-bold text-slate-400">{item.time}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="p-4 border-t border-slate-50">
-            <button className="w-full py-2 bg-slate-50 text-slate-500 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 transition-all border border-slate-200">View History</button>
-          </div>
-        </section>
       </div>
 
       {/* SECTION 5: CRITICAL ISSUES PANEL */}

@@ -48,6 +48,7 @@ const computeQaFromCall = ({ transcript, visitBooked, disposition, durationSecon
 
 export const AppProvider = ({ children }) => {
   const [callState, setCallState] = useState('idle');
+  const [callType, setCallType] = useState('outgoing'); // 'incoming' or 'outgoing'
   const [activeCustomer, setActiveCustomer] = useState(leads[0]);
   const [transcriptMessages, setTranscriptMessages] = useState([]);
   const [aiSuggestions, setAiSuggestions] = useState([]);
@@ -224,8 +225,18 @@ export const AppProvider = ({ children }) => {
     if (incomingCall) {
       setActiveCustomer(incomingCall.lead);
       setTranscriptMessages(incomingCall.aiHistory);
+      setCallType('incoming');
       setIncomingCall(null);
       setCallState('active');
+    }
+  }, [incomingCall]);
+
+  const previewIncomingCall = useCallback(() => {
+    if (incomingCall) {
+      setActiveCustomer(incomingCall.lead);
+      setTranscriptMessages(incomingCall.aiHistory);
+      setCallType('incoming');
+      setCallState('pre-call');
     }
   }, [incomingCall]);
 
@@ -235,6 +246,7 @@ export const AppProvider = ({ children }) => {
 
   const resetCallSession = useCallback(() => {
     setCallState('idle');
+    setCallType('outgoing');
     setTranscriptMessages([]);
     setAiSuggestions([]);
     setVisitBooked(false);
@@ -335,6 +347,9 @@ export const AppProvider = ({ children }) => {
       setIncomingCall,
       triggerIncomingCall,
       acceptCall,
+      previewIncomingCall,
+      callType,
+      setCallType,
       customerHistory,
       setCustomerHistory,
       inboundCampaigns,
@@ -366,6 +381,8 @@ export const AppProvider = ({ children }) => {
       incomingCall,
       triggerIncomingCall,
       acceptCall,
+      previewIncomingCall,
+      callType,
       customerHistory,
       escalations,
       addEscalation,

@@ -17,7 +17,8 @@ import {
   Info,
   History,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Bot
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AppShell from '../components/layout/AppShell';
@@ -43,7 +44,8 @@ const AgentDashboard = () => {
     triggerIncomingCall,
     incomingCall,
     acceptCall,
-    setTranscriptMessages,
+    previewIncomingCall,
+    setCallType,
     setIncomingCall
   } = useApp();
   
@@ -76,8 +78,8 @@ const AgentDashboard = () => {
     setSelectedLeadId(lead.id);
     setActiveCustomer(lead);
     resetCallSession();
-    setToast(`Lead ${lead.name} loaded. Auto task created: Outbound call + qualification.`);
-    setTimeout(() => setToast(''), 3000);
+    setCallType('outgoing');
+    setCallState('idle');
     navigate('/agent');
   };
 
@@ -341,52 +343,60 @@ const AgentDashboard = () => {
         </div>
       )}
 
-      {/* Incoming Call Modal */}
       {incomingCall && (
-        <div className="fixed top-20 right-6 z-[100] animate-in slide-in-from-right duration-500">
-          <div className="w-80 rounded-2xl bg-white p-5 shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100">
-            <div className="flex items-start justify-between mb-4">
-              <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 animate-pulse">
-                <Phone size={20} />
-              </div>
-              <div className="px-2 py-1 bg-emerald-50 rounded text-[10px] font-black text-emerald-700 uppercase tracking-widest">
-                Live Incoming
-              </div>
-            </div>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-6 animate-in fade-in duration-300">
+          <div className="w-full max-w-sm rounded-[32px] bg-white p-8 shadow-2xl animate-in zoom-in-95 duration-300 relative overflow-hidden">
+            {/* Background Accent */}
+            <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-blue-50 to-transparent" />
             
-            <h4 className="text-base font-black text-[#0A2C5E] mb-1">{incomingCall.lead.name}</h4>
-            <p className="text-xs text-slate-500 mb-4">Initial screening completed by AI Bot</p>
-            
-            <div className="bg-slate-50 rounded-xl p-3 mb-5 border border-slate-100">
-              <div className="flex items-center gap-2 mb-1.5">
-                <Brain size={12} className="text-blue-600" />
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">AI Handover Summary</span>
+            <div className="relative">
+              <div className="flex items-center justify-between mb-8">
+                <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-blue-200 animate-bounce">
+                  <Phone size={24} fill="currentColor" />
+                </div>
+                <div className="px-4 py-1.5 bg-blue-50 rounded-full border border-blue-100">
+                  <span className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] animate-pulse">Incoming Call</span>
+                </div>
               </div>
-              <p className="text-[11px] text-slate-600 leading-relaxed italic">
-                "Customer is asking about airport proximity and needs detailed floor plans for 4BHK units."
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setActiveCustomer(incomingCall.lead);
-                  setTranscriptMessages(incomingCall.aiHistory);
-                  navigate('/agent');
-                }}
-                className="py-2.5 rounded-xl bg-[#0A2C5E] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#0c3875] shadow-lg shadow-blue-100 transition-all active:scale-95"
-              >
-                View Details
-              </button>
-              <button
-                type="button"
-                onClick={() => setIncomingCall(null)}
-                className="py-2.5 rounded-xl border border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:bg-slate-50 transition-all"
-              >
-                Reject
-              </button>
+              
+              <div className="mb-8">
+                <h4 className="text-2xl font-black text-[#0A2C5E] tracking-tight">{incomingCall.lead.name}</h4>
+                <p className="text-sm font-bold text-slate-400 mt-1 uppercase tracking-widest">{incomingCall.lead.city} · {incomingCall.lead.propertyInterest}</p>
+              </div>
+              
+              <div className="bg-[#F8FAFC] rounded-3xl p-5 mb-8 border border-slate-100">
+                <div className="flex items-center gap-2 mb-3">
+                  <Bot size={14} className="text-blue-500" />
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">AI Handover Summary</span>
+                </div>
+                <p className="text-[13px] font-bold text-slate-600 leading-relaxed italic">
+                  "Customer asking about airport proximity and pricing for 4BHK units."
+                </p>
+              </div>
+              
+              <div className="flex flex-col gap-3">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    acceptCall();
+                    navigate('/agent');
+                  }}
+                  className="w-full py-4 rounded-2xl bg-blue-600 text-white text-[11px] font-black uppercase tracking-[0.2em] hover:bg-blue-700 shadow-xl shadow-blue-200 transition-all active:scale-95"
+                >
+                  Accept Call
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    previewIncomingCall();
+                    navigate('/agent');
+                  }}
+                  className="w-full py-4 rounded-2xl bg-white border border-slate-200 text-slate-600 text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all"
+                >
+                  View Details
+                </button>
+              </div>
             </div>
           </div>
         </div>

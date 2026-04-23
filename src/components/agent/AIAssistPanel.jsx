@@ -1,4 +1,4 @@
-import { Sparkles, BrainCircuit, Zap, Lightbulb, Bot } from 'lucide-react';
+import { Sparkles, Bot, MessageSquare, Zap, Target, MapPin, DollarSign } from 'lucide-react';
 
 const AIAssistPanel = ({
   suggestions,
@@ -15,102 +15,111 @@ const AIAssistPanel = ({
   const isLiveMode = callState === 'active' || callState === 'on_hold';
   const topRecommendedScript = suggestions[0]?.script;
 
+  const smartTags = [
+    { label: 'Price Sensitive', icon: DollarSign, color: 'text-amber-600', bg: 'bg-amber-50', active: latestCustomerMessage.toLowerCase().includes('price') },
+    { label: 'Location Priority', icon: MapPin, color: 'text-blue-600', bg: 'bg-blue-50', active: latestCustomerMessage.toLowerCase().includes('location') },
+    { label: 'High Intent', icon: Target, color: 'text-emerald-600', bg: 'bg-emerald-50', active: latestCustomerMessage.toLowerCase().includes('price') && latestCustomerMessage.toLowerCase().includes('location') },
+  ];
+
   return (
-    <section className="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all duration-200 hover:shadow-md">
-      <div className="mb-3 flex shrink-0 items-center justify-between border-b border-slate-200 pb-3">
-        <div className="flex items-center gap-2">
-          <Sparkles className="text-[#D71920]" size={16} />
-          <h2 className="text-lg font-semibold text-[#0A2C5E]">{isLiveMode ? 'AI Assistant · LIVE' : 'AI Assistant'}</h2>
-        </div>
-        {isLiveMode ? (
-          <div className="inline-flex items-center gap-1 rounded-full bg-[#0A2C5E]/10 px-2 py-1 text-[10px] font-semibold text-[#0A2C5E]">
-            <BrainCircuit size={11} /> Insights: {triggerCount}
+    <section className="flex flex-col h-full bg-white">
+      <div className="flex shrink-0 items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-blue-50 rounded-xl">
+            <Sparkles className="text-blue-600" size={18} />
           </div>
-        ) : null}
+          <div>
+            <h2 className="text-base font-black text-slate-800 tracking-tight uppercase">AI Co-Pilot</h2>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Real-time Assist</p>
+          </div>
+        </div>
       </div>
 
-      {!isLiveMode ? (
-        <div className="flex h-full items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-center text-sm text-slate-500">
-          AI Assistant activates only during an active call.
-        </div>
-      ) : (
-      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
-        <div className="rounded-lg bg-[#0A2C5E] p-3 text-white">
-          <p className="text-[11px] font-semibold uppercase tracking-wide opacity-80">Recommended Script</p>
-          <p className="mt-1 text-sm">
-            {topRecommendedScript || 'Thanks for sharing that. I can help shortlist the best option and schedule your site visit.'}
-          </p>
-        </div>
-
-        {summaryMode ? (
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Final AI Summary</p>
-            <p className="mt-1">Final intent: {summaryData?.finalIntent || 'Qualified Discussion'}</p>
-            <p className="mt-1">Key insight: {summaryData?.keyInsight || memoryInsight}</p>
-            <p className="mt-1">Outcome: {summaryData?.outcome || 'Follow-up required'}</p>
+      <div className="flex-1 space-y-6">
+        {/* Smart Tags Section */}
+        {isLiveMode && (
+          <div className="flex flex-wrap gap-2">
+            {smartTags.map((tag, i) => (
+              <div 
+                key={i} 
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight transition-all border ${
+                  tag.active 
+                  ? `${tag.bg} ${tag.color} border-current border-opacity-20` 
+                  : 'bg-slate-50 text-slate-300 border-slate-100'
+                }`}
+              >
+                <tag.icon size={11} />
+                {tag.label}
+              </div>
+            ))}
           </div>
-        ) : (
-          <>
-            <div
-              key={pulseKey || 'empty'}
-              className={`rounded-lg border p-3 transition-all duration-300 ${
-                latestCustomerMessage
-                  ? 'scale-[1.01] animate-[pulse_0.55s_ease-in-out_1] border-[#D71920]/70 bg-[#fff5f5] shadow-[0_0_0_2px_rgba(215,25,32,0.15)]'
-                  : 'border-slate-200 bg-slate-50'
-              }`}
-            >
-              <p className="flex items-center gap-2 text-xs font-semibold text-[#D71920]">
-                <Zap size={13} /> Live Trigger Insight
-              </p>
-              <p className="mt-1 text-xs text-slate-600">{liveInsight || 'Waiting for trigger from customer response.'}</p>
-            </div>
-
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-              <p className="text-[11px] uppercase tracking-wide text-slate-500">Suggested Next Action</p>
-              <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-slate-700">
-                <li>Greet customer</li>
-                <li>Confirm interest</li>
-                <li>Ask availability</li>
-              </ul>
-            </div>
-
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700">
-              <p className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                <Bot size={12} /> AI Insight Memory
-              </p>
-              <p className="mt-1">{memoryInsight}</p>
-            </div>
-          </>
         )}
 
-        {aiAnalyzing && !summaryMode ? (
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">
-            <p className="font-semibold text-slate-700">Analyzing customer response...</p>
-            <p className="mt-1">Generating best next script and positioning strategy.</p>
+        {/* The Recommended Script - Softer Palette */}
+        <div 
+          key={pulseKey || 'empty'}
+          className={`group relative rounded-2xl p-6 transition-all duration-500 border-2 ${
+            aiAnalyzing 
+            ? 'border-blue-100 bg-blue-50/30 animate-pulse' 
+            : 'border-blue-100 bg-blue-50/50 text-blue-900 shadow-sm shadow-blue-900/5'
+          }`}
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <MessageSquare size={14} className="text-blue-500" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-blue-500/70">
+              {aiAnalyzing ? 'AI is thinking...' : 'Recommended Response'}
+            </span>
           </div>
-        ) : null}
 
-        {suggestions.map((item) => (
-          <article key={`${item.title}-${item.trigger}`} className="rounded-lg border border-slate-200 bg-slate-50 p-3 transition-all duration-200 hover:shadow-lg">
-            <div className="flex items-center justify-between">
-              <h3 className="flex items-center gap-1 text-sm font-semibold text-[#0A2C5E]">
-                <Lightbulb size={14} /> {item.title}
-              </h3>
-              <span className="rounded-full bg-[#D71920]/10 px-2 py-0.5 text-[10px] font-semibold uppercase text-[#D71920]">{item.trigger}</span>
+          <p className="text-[14px] font-bold leading-relaxed text-blue-900/90">
+            {aiAnalyzing 
+              ? "Synthesizing response..."
+              : topRecommendedScript || 'Listening for customer cues...'
+            }
+          </p>
+
+          {!aiAnalyzing && (
+            <div className="mt-6 pt-5 border-t border-blue-200/50 flex justify-between items-center">
+              <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Conf: 94%</span>
+              <button className="text-[10px] font-black uppercase tracking-widest text-blue-600 hover:text-blue-700 transition-all">
+                Copy Script
+              </button>
             </div>
-            <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-slate-700">
-              {item.bullets.map((bullet) => (
-                <li key={bullet}>{bullet}</li>
-              ))}
-            </ul>
-            <div className="mt-3 rounded-md bg-[#0A2C5E] p-2 text-xs text-white">
-              <p className="font-semibold">Recommended Script</p>
-              <p className="mt-1 opacity-90">{item.script}</p>
+          )}
+        </div>
+
+        {/* Secondary Insights - Compact */}
+        {isLiveMode && (
+          <div className="space-y-4">
+             <div className="rounded-xl bg-slate-50 p-4 border border-slate-100">
+                <div className="flex items-center gap-2 mb-2">
+                   <Zap size={12} className="text-amber-500" />
+                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Live Insight</p>
+                </div>
+                <p className="text-[13px] font-medium text-slate-600 leading-relaxed">
+                   {liveInsight || 'Waiting for intent...'}
+                </p>
+             </div>
+          </div>
+        )}
+
+        {summaryMode && (
+          <div className="rounded-2xl border border-slate-100 bg-slate-50 p-6 animate-in slide-in-from-bottom-4">
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">Post-Call Summary</p>
+            <div className="space-y-4">
+              <div>
+                <p className="text-[10px] font-black text-blue-600 uppercase tracking-tight mb-1">Final Intent</p>
+                <p className="text-[13px] font-bold text-slate-700">{summaryData?.finalIntent || 'Qualified'}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-black text-blue-600 uppercase tracking-tight mb-1">Key Memory</p>
+                <p className="text-[13px] font-bold text-slate-600 leading-relaxed">{summaryData?.keyInsight || memoryInsight}</p>
+              </div>
             </div>
-          </article>
-        ))}
+          </div>
+        )}
+
       </div>
-      )}
     </section>
   );
 };

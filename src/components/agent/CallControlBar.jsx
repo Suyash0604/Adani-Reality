@@ -1,13 +1,9 @@
 import { useState } from 'react';
-import { Phone, PauseCircle, MicOff, CalendarPlus, PhoneOff, Play, FileCheck2, Share2, MessageSquare, ShieldAlert, Search } from 'lucide-react';
-
-const baseBtn =
-  'inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-[11px] font-black uppercase tracking-widest transition-all duration-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45';
-
-const outlineBtn = 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 hover:shadow-md';
+import { Phone, PauseCircle, MicOff, CalendarPlus, PhoneOff, Play, FileCheck2, Share2, MessageSquare, ShieldAlert, Search, Mic, XCircle, CheckCircle2 } from 'lucide-react';
 
 const CallControlBar = ({
   callState,
+  callType,
   muted,
   onToggleMute,
   onStartCall,
@@ -22,116 +18,152 @@ const CallControlBar = ({
   onRejectCall,
 }) => {
   const [showTransfer, setShowTransfer] = useState(false);
+  
+  const isPreCall = callState === 'pre-call';
   const isActive = callState === 'active';
   const isOnHold = callState === 'on_hold';
-  const inLiveCall = isActive || isOnHold;
   const isEnded = callState === 'ended';
+  const isDialing = callState === 'dialing';
+  const inLiveCall = isActive || isOnHold;
 
-  const handleTransfer = (dept) => {
-    onRejectCall(); // Resets call session
-    setShowTransfer(false);
-  };
+  const btnBase = "h-11 px-6 rounded-xl flex items-center justify-center gap-2.5 text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm";
 
+  // State: ENDED
   if (isEnded) {
     return (
-      <div className="sticky bottom-0 z-20 border-t border-slate-200 bg-white/95 px-3 py-3 backdrop-blur-sm">
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            className={`${baseBtn} bg-emerald-600 text-white hover:bg-emerald-700 hover:shadow-lg`}
-            onClick={onStartNewCall}
-          >
-            <Phone size={14} /> Start New Call
-          </button>
-          <button
-            type="button"
-            className={`${baseBtn} ${outlineBtn}`}
-            onClick={onGoToQa}
-          >
-            <FileCheck2 size={14} /> View QA Report
-          </button>
-        </div>
+      <div className="flex gap-3 justify-center animate-in slide-in-from-bottom-2">
+        <button
+          onClick={onStartNewCall}
+          className={`${btnBase} bg-blue-600 text-white hover:bg-blue-700 shadow-blue-200 shadow-lg`}
+        >
+          <Phone size={14} fill="currentColor" /> Start New Call
+        </button>
+        <button
+          onClick={onGoToQa}
+          className={`${btnBase} bg-white border border-slate-200 text-slate-600 hover:bg-slate-50`}
+        >
+          <FileCheck2 size={14} /> View QA Report
+        </button>
+      </div>
+    );
+  }
+
+  // State: PRE-CALL (Incoming Preview)
+  if (isPreCall) {
+    return (
+      <div className="flex gap-3 justify-center animate-in slide-in-from-bottom-2">
+        <button
+          onClick={onAcceptCall}
+          className={`${btnBase} bg-blue-600 text-white hover:bg-blue-700 shadow-blue-200 shadow-xl px-12`}
+        >
+          <CheckCircle2 size={16} /> Accept Call
+        </button>
+        <button
+          onClick={() => setShowTransfer(!showTransfer)}
+          className={`${btnBase} bg-white border border-slate-200 text-slate-600 hover:bg-slate-50`}
+        >
+          <Share2 size={16} /> Transfer
+        </button>
+        <button
+          onClick={onRejectCall}
+          className={`${btnBase} bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100`}
+        >
+          <XCircle size={16} /> Reject
+        </button>
+
+        {showTransfer && (
+          <div className="absolute bottom-16 left-1/2 -translate-x-1/2 w-56 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden animate-in zoom-in-95 duration-200 z-[60]">
+            <div className="p-3 bg-slate-50 border-b border-slate-100"><p className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">Transfer Call To</p></div>
+            <div className="p-1">
+              {[
+                { id: 'Support', label: 'Customer Service', icon: MessageSquare, color: 'hover:bg-blue-50 hover:text-blue-600' },
+                { id: 'Grievance', label: 'Grievance Dept', icon: ShieldAlert, color: 'hover:bg-rose-50 hover:text-rose-600' },
+                { id: 'Inquiry', label: 'Sales Enquiry', icon: Search, color: 'hover:bg-emerald-50 hover:text-emerald-600' },
+              ].map((dept) => (
+                <button key={dept.id} onClick={() => onRejectCall()} className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[10px] font-bold text-slate-600 transition-colors ${dept.color}`}><dept.icon size={14} /> {dept.label}</button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     );
   }
 
   return (
-    <div className="sticky bottom-0 z-20 border-t border-slate-200 bg-white/95 px-3 py-3 backdrop-blur-sm">
-      {showTransfer && (
-        <div className="absolute bottom-full left-0 mb-2 w-48 bg-white rounded-xl shadow-2xl border border-slate-100 overflow-hidden animate-in slide-in-from-bottom-2">
-          <div className="p-2 bg-slate-50 border-b border-slate-100">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Transfer Call to</p>
-          </div>
-          <button onClick={() => handleTransfer('Support')} className="w-full flex items-center gap-3 px-4 py-2.5 text-[11px] font-bold text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">
-            <MessageSquare size={14} /> Customer Service
-          </button>
-          <button onClick={() => handleTransfer('Grievance')} className="w-full flex items-center gap-3 px-4 py-2.5 text-[11px] font-bold text-slate-600 hover:bg-rose-50 hover:text-rose-600 transition-colors">
-            <ShieldAlert size={14} /> Grievance Redressal
-          </button>
-          <button onClick={() => handleTransfer('Inquiry')} className="w-full flex items-center gap-3 px-4 py-2.5 text-[11px] font-bold text-slate-600 hover:bg-emerald-50 hover:text-emerald-600 transition-colors">
-            <Search size={14} /> Sales Enquiry
-          </button>
-        </div>
+    <div className="relative flex items-center justify-center gap-3">
+      {/* State: IDLE / DIALING */}
+      {!inLiveCall && (
+        <button
+          onClick={onStartCall}
+          disabled={isDialing}
+          className={`${btnBase} bg-blue-600 text-white shadow-xl min-w-[200px]`}
+        >
+          <Phone size={16} fill="currentColor" /> 
+          {isDialing ? 'Dialing...' : 'Start Outgoing Call'}
+        </button>
       )}
 
-      <div className="flex gap-2">
-        <button
-          type="button"
-          className={`${baseBtn} flex-1 bg-emerald-600 text-white hover:bg-emerald-700 hover:shadow-lg`}
-          onClick={incomingCall ? onAcceptCall : onStartCall}
-          disabled={inLiveCall || callState === 'dialing'}
-        >
-          <Phone size={14} /> {incomingCall ? 'Accept' : 'Call'}
-        </button>
-
-        {incomingCall && (
-          <button
-            type="button"
-            className={`${baseBtn} flex-1 border border-slate-300 bg-white text-slate-600 hover:bg-slate-50`}
-            onClick={() => setShowTransfer(!showTransfer)}
-          >
-            <Share2 size={14} /> Transfer
-          </button>
-        )}
-
-        <button 
-          type="button" 
-          className={`${baseBtn} flex-1 ${outlineBtn}`} 
-          onClick={isOnHold ? onResume : onHold} 
-          disabled={!inLiveCall}
-        >
-          {isOnHold ? (
-            <><Play size={14} /> Resume</>
-          ) : (
-            <><PauseCircle size={14} /> Hold</>
+      {/* State: ACTIVE / ON HOLD */}
+      {inLiveCall && (
+        <div className="flex gap-2 items-center bg-white/90 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200 shadow-2xl animate-in slide-in-from-bottom-2">
+          {/* Transfer button only for incoming calls as per request */}
+          {callType === 'incoming' && (
+            <button
+              onClick={() => setShowTransfer(!showTransfer)}
+              className={`${btnBase} bg-slate-50 text-slate-600 hover:bg-slate-100`}
+            >
+              <Share2 size={14} /> Transfer
+            </button>
           )}
-        </button>
 
-        <button type="button" className={`${baseBtn} flex-1 ${outlineBtn}`} onClick={onToggleMute} disabled={!inLiveCall}>
-          <MicOff size={14} /> {muted ? 'Unmute' : 'Mute'}
-        </button>
+          <button
+            onClick={isOnHold ? onResume : onHold}
+            className={`${btnBase} bg-slate-50 text-slate-600 hover:bg-slate-100`}
+          >
+            {isOnHold ? <><Play size={14} fill="currentColor" /> Resume</> : <><PauseCircle size={14} /> Hold</>}
+          </button>
 
-        <button
-          type="button"
-          className={`${baseBtn} flex-1 bg-amber-500 text-white hover:bg-amber-600 hover:shadow-lg`}
-          onClick={onBookVisit}
-          disabled={!inLiveCall}
-        >
-          <CalendarPlus size={14} /> Book Visit
-        </button>
+          <button
+            onClick={onToggleMute}
+            className={`${btnBase} ${muted ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-slate-50 text-slate-600'}`}
+          >
+            {muted ? <><MicOff size={14} /> Unmuted</> : <><Mic size={14} /> Mute</>}
+          </button>
 
-        <button
-          type="button"
-          className={`${baseBtn} flex-1 bg-[#D71920] text-white hover:bg-[#bf161c] hover:shadow-lg`}
-          onClick={onEndCall}
-          disabled={!inLiveCall}
-        >
-          <PhoneOff size={14} /> End Call
-        </button>
-      </div>
+          <div className="w-px h-8 bg-slate-200 mx-1" />
+
+          <button
+            onClick={onBookVisit}
+            className={`${btnBase} bg-amber-500 text-white hover:bg-amber-600 shadow-amber-200 shadow-lg`}
+          >
+            <CalendarPlus size={14} /> Book Visit
+          </button>
+
+          <button
+            onClick={onEndCall}
+            className={`${btnBase} bg-rose-600 text-white hover:bg-rose-700 shadow-rose-200 shadow-lg`}
+          >
+            <PhoneOff size={14} /> End Call
+          </button>
+
+          {showTransfer && (
+            <div className="absolute bottom-16 left-1/2 -translate-x-1/2 w-56 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden animate-in zoom-in-95 duration-200 z-[60]">
+              <div className="p-3 bg-slate-50 border-b border-slate-100"><p className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">Transfer Call To</p></div>
+              <div className="p-1">
+                {[
+                  { id: 'Support', label: 'Customer Service', icon: MessageSquare, color: 'hover:bg-blue-50 hover:text-blue-600' },
+                  { id: 'Grievance', label: 'Grievance Dept', icon: ShieldAlert, color: 'hover:bg-rose-50 hover:text-rose-600' },
+                  { id: 'Inquiry', label: 'Sales Enquiry', icon: Search, color: 'hover:bg-emerald-50 hover:text-emerald-600' },
+                ].map((dept) => (
+                  <button key={dept.id} onClick={() => onRejectCall()} className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[10px] font-bold text-slate-600 transition-colors ${dept.color}`}><dept.icon size={14} /> {dept.label}</button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
-
 
 export default CallControlBar;

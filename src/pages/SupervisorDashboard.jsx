@@ -23,9 +23,31 @@ import {
   Clock,
   ArrowUpRight,
   ArrowDownRight,
-  X
+  X,
+  Filter,
+  Calendar,
+  MoreVertical,
+  Flag,
+  TrendingUp,
+  ShieldAlert,
+  ArrowRight
 } from 'lucide-react';
 import AppShell from '../components/layout/AppShell';
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend, 
+  ResponsiveContainer, 
+  Line, 
+  LineChart, 
+  Cell,
+  AreaChart,
+  Area
+} from 'recharts';
 import { supervisorAgents, supervisorKpis, campaignData } from '../data/mockData';
 import { AppContext } from '../context/appContextObject';
 
@@ -38,12 +60,110 @@ const mockTranscripts = [
   { speaker: 'Agent', text: 'Understood. We have a special festive offer valid this weekend.' },
 ];
 
-const conversionData = [
-  { project: 'Adani Realty One', totalCalls: '1,248', interested: '386 (30.9%)', siteVisits: 142, bookings: 28, conversion: '22.4%', trend: 'up', trendValue: '3.2%' },
-  { project: 'Adani Elysium', totalCalls: '842', interested: '221 (26.2%)', siteVisits: 88, bookings: 16, conversion: '18.1%', trend: 'up', trendValue: '1.8%' },
-  { project: 'Adani Codename ONE', totalCalls: '1,120', interested: '298 (26.6%)', siteVisits: 112, bookings: 19, conversion: '16.9%', trend: 'down', trendValue: '0.4%' },
-  { project: 'Adani Aangan', totalCalls: '488', interested: '108 (22.1%)', siteVisits: 42, bookings: 6, conversion: '14.3%', trend: 'up', trendValue: '0.9%' },
+const funnelData = [
+  { stage: 'Leads Called', count: 1248, percentage: '100%', color: 'bg-blue-500' },
+  { stage: 'Interested', count: 386, percentage: '30.9%', color: 'bg-indigo-500' },
+  { stage: 'Site Visit Booked', count: 142, percentage: '11.4%', color: 'bg-violet-500' },
+  { stage: 'Visited', count: 88, percentage: '7.1%', color: 'bg-purple-500' },
+  { stage: 'Booked', count: 28, percentage: '2.2%', color: 'bg-emerald-500' },
 ];
+
+const campaignPerformanceData = [
+  { name: 'Realty One', calls: 1248, interested: 386, siteVisits: 142, bookings: 28, conversion: 22.4 },
+  { name: 'Elysium', calls: 842, interested: 221, siteVisits: 88, bookings: 16, conversion: 18.1 },
+  { name: 'Codename ONE', calls: 1120, interested: 298, siteVisits: 112, bookings: 19, conversion: 16.9 },
+  { name: 'Aangan', calls: 488, interested: 108, siteVisits: 42, bookings: 6, conversion: 14.3 },
+];
+
+const projectCards = [
+  { 
+    name: 'Adani Realty One', 
+    health: 94, 
+    calls: '1,248', 
+    interested: '30.9%', 
+    bookings: 28, 
+    conversion: 22.4, 
+    trend: 'up', 
+    history: [45, 52, 48, 61, 55, 68, 72] 
+  },
+  { 
+    name: 'Adani Elysium', 
+    health: 88, 
+    calls: '842', 
+    interested: '26.2%', 
+    bookings: 16, 
+    conversion: 18.1, 
+    trend: 'up', 
+    history: [32, 38, 35, 42, 40, 48, 45] 
+  },
+  { 
+    name: 'Adani Codename ONE', 
+    health: 82, 
+    calls: '1,120', 
+    interested: '26.6%', 
+    bookings: 19, 
+    conversion: 16.9, 
+    trend: 'down', 
+    history: [55, 50, 48, 45, 42, 40, 38] 
+  },
+  { 
+    name: 'Adani Aangan', 
+    health: 76, 
+    calls: '488', 
+    interested: '22.1%', 
+    bookings: 6, 
+    conversion: 14.3, 
+    trend: 'up', 
+    history: [20, 22, 25, 28, 24, 30, 32] 
+  },
+];
+
+const criticalIssuesData = [
+  { id: 'ISS-001', campaign: 'Grievance Redressal', agent: 'Rahul Kumar', type: 'Negative Sentiment', timeOpen: '12 min', priority: 'P1', status: 'Pending' },
+  { id: 'ISS-002', campaign: 'Adani Realty One', agent: 'Sneha Patil', type: 'Call Drop', timeOpen: '5 min', priority: 'P2', status: 'In Progress' },
+  { id: 'ISS-003', campaign: 'Payment Followup', agent: 'Arjun Menon', type: 'Compliance Alert', timeOpen: '22 min', priority: 'P1', status: 'Pending' },
+  { id: 'ISS-004', campaign: 'Support Desk', agent: 'Nisha Kapoor', type: 'Extended Silence', timeOpen: '1 min', priority: 'P3', status: 'Pending' },
+];
+
+const activityFeed = [
+  { id: 1, text: "Rahul Kumar converted lead on Adani Realty One", time: "2 min ago", type: "success" },
+  { id: 2, text: "New critical issue raised in Grievance Redressal", time: "5 min ago", type: "error" },
+  { id: 3, text: "Campaign 'Festive Offers' reached 80% target", time: "12 min ago", type: "info" },
+  { id: 4, text: "Sneha Patil scheduled a site visit for Elysium", time: "15 min ago", type: "success" },
+  { id: 5, text: "Compliance alert triggered in Payment campaign", time: "25 min ago", type: "warning" },
+  { id: 6, text: "System load balanced across 12 nodes", time: "1 hour ago", type: "info" },
+  { id: 7, text: "New agent onboarded: Karan Sharma", time: "2 hours ago", type: "info" },
+  { id: 8, text: "Weekly performance report generated", time: "3 hours ago", type: "info" },
+  { id: 9, text: "Arjun Menon requested a break", time: "4 hours ago", type: "warning" },
+  { id: 10, text: "Backup completed successfully", time: "5 hours ago", type: "success" },
+];
+
+const Sparkline = ({ data, color = "#3b82f6" }) => {
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min;
+  const width = 100;
+  const height = 30;
+  const points = data.map((val, i) => {
+    const x = (i / (data.length - 1)) * width;
+    const y = height - ((val - min) / range) * height;
+    return `${x},${y}`;
+  }).join(' ');
+
+  return (
+    <svg width={width} height={height} className="overflow-visible">
+      <polyline
+        fill="none"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        points={points}
+      />
+    </svg>
+  );
+};
+
 
 const agentStatusData = [
   { id: 1, name: 'Rahul Kumar', status: 'On Call', detail: 'On call · Priya Mehta · 4:22', color: 'bg-amber-500', sentiment: '🙂' },
@@ -62,8 +182,19 @@ const SupervisorDashboard = () => {
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [activeTab, setActiveTab] = useState('inbound');
   const [showCallsBreakdown, setShowCallsBreakdown] = useState(false);
-  
   const [agentsData, setAgentsData] = useState(supervisorAgents);
+  const [selectedTimeRange, setSelectedTimeRange] = useState('Today');
+  const [selectedShift, setSelectedShift] = useState('Morning');
+  const [showCriticalDrawer, setShowCriticalDrawer] = useState(false);
+  const [expandedCampaign, setExpandedCampaign] = useState(null);
+
+  const agentPerformanceData = [
+    { name: 'Rahul Kumar', status: 'On Call', callsToday: 42, aht: '4:15', conversions: 4, resolution: 88, lastActivity: '2 min ago', color: 'bg-amber-500', performance: 'Top Performer' },
+    { name: 'Sneha Patil', status: 'Available', callsToday: 38, aht: '3:50', conversions: 5, resolution: 92, lastActivity: '5 min ago', color: 'bg-emerald-500', performance: 'Top Performer' },
+    { name: 'Arjun Menon', status: 'On Call', callsToday: 35, aht: '5:30', conversions: 2, resolution: 72, lastActivity: '10 min ago', color: 'bg-amber-500', performance: 'Average' },
+    { name: 'Nisha Kapoor', status: 'Break', callsToday: 28, aht: '4:45', conversions: 1, resolution: 65, lastActivity: '15 min ago', color: 'bg-slate-400', performance: 'Needs Attention' },
+    { name: 'Vivek Desai', status: 'Available', callsToday: 45, aht: '3:20', conversions: 6, resolution: 95, lastActivity: '1 min ago', color: 'bg-emerald-500', performance: 'Top Performer' },
+  ];
 
   const { 
     allProjects, 
@@ -164,37 +295,66 @@ const SupervisorDashboard = () => {
     <AppShell title="Campaign Intelligence">
       {/* Header & Breadcrumb */}
       <div className="flex items-center justify-between mb-6">
-        <nav className="flex items-center gap-2 text-xs font-bold text-slate-400">
-          <Link to="/supervisor" className="hover:text-slate-600 cursor-pointer">Dashboard</Link>
-          <span className="text-slate-300">/</span>
-          <span className="text-slate-600">Campaign Intelligence</span>
-        </nav>
+        <div>
+          <nav className="flex items-center gap-2 text-xs font-bold text-slate-400 mb-2">
+            <Link to="/supervisor" className="hover:text-slate-600 cursor-pointer">Dashboard</Link>
+            <span className="text-slate-300">/</span>
+            <span className="text-slate-600">Campaign Intelligence</span>
+          </nav>
+          <h1 className="text-2xl font-black text-[#0A2C5E] tracking-tight">Supervisor Command Center</h1>
+        </div>
         
-        <div className="flex items-center gap-3">
-           <button
-              onClick={() => setShowCreateProject(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-[10px] font-black text-slate-600 hover:bg-slate-50 transition-all uppercase tracking-widest"
-            >
-              <Plus size={14} />
-              New Project
-            </button>
-           <button
-              onClick={() => setShowCreateCampaign(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-[#0A2C5E] rounded-lg text-[10px] font-black text-white hover:bg-[#0c3875] transition-all shadow-md uppercase tracking-widest"
-            >
-              <Plus size={14} />
-              New Campaign
-            </button>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+            {['Today', 'This Week', 'This Month'].map(range => (
+              <button
+                key={range}
+                onClick={() => setSelectedTimeRange(range)}
+                className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${selectedTimeRange === range ? 'bg-white text-[#0A2C5E] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                {range}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+            {['Morning', 'Evening', 'Night'].map(shift => (
+              <button
+                key={shift}
+                onClick={() => setSelectedShift(shift)}
+                className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${selectedShift === shift ? 'bg-[#0A2C5E] text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                {shift}
+              </button>
+            ))}
+          </div>
+
+          <div className="h-8 w-[1px] bg-slate-200 mx-2" />
+
+          <button
+            onClick={() => setShowCreateProject(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-[10px] font-black text-slate-600 hover:bg-slate-50 transition-all uppercase tracking-widest"
+          >
+            <Plus size={14} />
+            New Project
+          </button>
+          <button
+            onClick={() => setShowCreateCampaign(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-[#0A2C5E] rounded-lg text-[10px] font-black text-white hover:bg-[#0c3875] transition-all shadow-md uppercase tracking-widest"
+          >
+            <Plus size={14} />
+            New Campaign
+          </button>
         </div>
       </div>
 
-      {/* KPI Strip */}
-      <section className="grid grid-cols-4 gap-4 mb-8">
+      <section className="grid grid-cols-6 gap-4 mb-8">
         {[
           { 
             label: 'Total Calls Today', 
             value: '312', 
             trend: '↑ 12%', 
+            sparkline: [210, 240, 220, 280, 260, 310, 312],
             color: 'text-emerald-600', 
             bg: 'bg-emerald-50',
             onClick: () => setShowCallsBreakdown(true)
@@ -202,6 +362,7 @@ const SupervisorDashboard = () => {
           { 
             label: 'Conversion Rate', 
             value: '3.2%', 
+            subValue: 'Target: 5.0%',
             trend: '↓ 2%', 
             color: 'text-amber-600', 
             bg: 'bg-amber-50'
@@ -211,131 +372,201 @@ const SupervisorDashboard = () => {
             value: '07', 
             trend: '↑ 1', 
             color: 'text-rose-600', 
-            bg: 'bg-rose-50'
+            bg: 'bg-rose-50',
+            onClick: () => setShowCriticalDrawer(true)
           },
           { 
             label: 'Active Agents', 
             value: '112', 
+            breakdown: '🟠 45 | 🟢 52 | ⚪ 15',
             trend: '↑ 5', 
             color: 'text-blue-600', 
             bg: 'bg-blue-50'
+          },
+          { 
+            label: 'Avg Handle Time', 
+            value: '4:12', 
+            trend: '↓ 15s', 
+            color: 'text-emerald-600', 
+            bg: 'bg-emerald-50'
+          },
+          { 
+            label: 'Total Bookings', 
+            value: '28', 
+            trend: '↑ 4', 
+            color: 'text-indigo-600', 
+            bg: 'bg-indigo-50'
           },
         ].map((kpi, idx) => (
           <div 
             key={idx} 
             onClick={kpi.onClick}
-            className={`p-4 rounded-2xl bg-white border border-slate-100 shadow-sm transition-all ${kpi.onClick ? 'cursor-pointer hover:border-blue-200 hover:shadow-md' : ''}`}
+            className={`p-4 rounded-2xl bg-white border border-slate-100 shadow-sm transition-all flex flex-col justify-between ${kpi.onClick ? 'cursor-pointer hover:border-blue-200 hover:shadow-md hover:scale-[1.02]' : ''}`}
           >
-            <div className="flex justify-between items-start mb-1">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{kpi.label}</span>
-              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${kpi.bg} ${kpi.color}`}>
+            <div className="flex justify-between items-start mb-2">
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight">{kpi.label}</span>
+              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${kpi.bg} ${kpi.color}`}>
                 {kpi.trend}
               </span>
             </div>
-            <div className="flex items-end gap-2">
-              <span className="text-2xl font-bold text-slate-800">{kpi.value}</span>
+            <div className="flex items-end justify-between gap-2">
+              <div>
+                <span className="text-2xl font-bold text-slate-800">{kpi.value}</span>
+                {kpi.subValue && <p className="text-[10px] font-bold text-slate-400 mt-0.5">{kpi.subValue}</p>}
+                {kpi.breakdown && <p className="text-[10px] font-bold text-slate-500 mt-0.5">{kpi.breakdown}</p>}
+              </div>
+              {kpi.sparkline && (
+                <div className="mb-1">
+                  <Sparkline data={kpi.sparkline} color={idx === 0 ? "#10b981" : "#3b82f6"} />
+                </div>
+              )}
             </div>
           </div>
         ))}
       </section>
 
-      {/* Middle Grid: Agent Status & Project Conversion */}
-      <div className="grid grid-cols-12 gap-6 mb-8">
-        {/* Agent Status List */}
-        <section className="col-span-12 lg:col-span-4 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
-          <div className="px-6 py-5 border-b border-slate-100">
-             <h2 className="text-sm font-bold text-[#0A2C5E]">Agent Status – Right Now</h2>
+      {/* SECTION 2: CAMPAIGN OVERVIEW (MOVED UP) */}
+      <section className="mb-10 space-y-8">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
+              <TrendingUp size={18} />
+            </div>
+            <h2 className="text-lg font-black text-[#0A2C5E] tracking-tight">Campaign Overview</h2>
           </div>
-          <div className="flex-1 p-0 overflow-y-auto max-h-[400px]">
-            {agentStatusData.map((agent, i) => (
-              <div 
-                key={i} 
-                onClick={() => {
-                  if (agent.status === 'On Call') {
-                    setSelectedAgent({...supervisorAgents[0], name: agent.name, customer: agent.detail.split('·')[1]?.trim() || 'Sneha ji'});
-                  } else {
-                    addToast(`${agent.name} is not currently on a call`, 'info');
-                  }
-                }}
-                className={`px-6 py-4 flex items-center justify-between transition-colors border-b border-slate-50 last:border-0 ${
-                  agent.status === 'On Call' ? 'hover:bg-slate-50 cursor-pointer group' : 'opacity-60 cursor-not-allowed'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-[#0A2C5E] group-hover:bg-blue-100 group-hover:text-blue-700 transition-colors">
-                    {agent.name.split(' ').map(n => n[0]).join('')}
+          <div className="flex items-center bg-white border border-slate-200 p-1 rounded-xl shadow-sm">
+            {['Today', 'Week', 'Month'].map(f => (
+              <button key={f} className="px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-700 transition-all">
+                {f}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 2A: Campaign Cards */}
+        <div className="grid grid-cols-4 gap-6">
+          {projectCards.map((card, idx) => (
+            <div key={idx} className={`bg-white rounded-2xl shadow-sm border-l-4 p-5 hover:shadow-md transition-all ${card.trend === 'up' ? 'border-l-emerald-500' : 'border-l-rose-500'}`}>
+              <div className="flex justify-between items-start mb-4">
+                <h3 className="text-sm font-bold text-slate-800">{card.name}</h3>
+                <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${card.health > 85 ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
+                  Score: {card.health}
+                </span>
+              </div>
+              
+              <div className="h-10 mb-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={card.history.map((v, i) => ({ val: v, i }))}>
+                    <defs>
+                      <linearGradient id={`grad-${idx}`} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={card.trend === 'up' ? '#10b981' : '#f43f5e'} stopOpacity={0.1}/>
+                        <stop offset="95%" stopColor={card.trend === 'up' ? '#10b981' : '#f43f5e'} stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <Area type="monotone" dataKey="val" stroke={card.trend === 'up' ? '#10b981' : '#f43f5e'} strokeWidth={2} fillOpacity={1} fill={`url(#grad-${idx})`} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="flex justify-between items-end">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5 text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                    <span>{card.calls} Calls</span>
+                    <span className="text-slate-200">|</span>
+                    <span>{card.interested} Int.</span>
                   </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-800 group-hover:text-[#D71920] transition-colors">{agent.name}</p>
-                    <p className="text-[10px] font-medium text-slate-400">{agent.detail}</p>
+                  <div className="text-2xl font-black text-slate-800 flex items-center gap-2">
+                    {card.conversion}%
+                    {card.trend === 'up' ? <ArrowUpRight className="text-emerald-500" size={18} /> : <ArrowDownRight className="text-rose-500" size={18} />}
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                   <div className={`h-2 w-2 rounded-full ${agent.color}`} />
-                   <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-tight ${
-                     agent.status === 'Available' ? 'bg-emerald-50 text-emerald-600' :
-                     agent.status === 'On Call' ? 'bg-amber-50 text-amber-600' : 'bg-slate-100 text-slate-500'
-                   }`}>
-                     {agent.status}
-                   </span>
+                <div className="text-right">
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Bookings</p>
+                  <p className="text-sm font-bold text-slate-700">{card.bookings}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* 2B: Full Width Grouped Bar Chart */}
+        <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm h-[450px] flex flex-col">
+          <div className="flex justify-between items-center mb-8">
+            <h3 className="text-sm font-bold text-[#0A2C5E]">Campaign Performance This Month</h3>
+            <div className="flex gap-4 items-center">
+               <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400"><div className="h-2 w-2 rounded-full bg-blue-500" /> Calls</div>
+               <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400"><div className="h-2 w-2 rounded-full bg-indigo-500" /> Interested</div>
+               <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400"><div className="h-2 w-2 rounded-full bg-violet-500" /> Site Visits</div>
+               <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400"><div className="h-2 w-2 rounded-full bg-emerald-500" /> Bookings</div>
+               <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400"><div className="h-0.5 w-4 bg-rose-500" /> Conv %</div>
+            </div>
+          </div>
+          <div className="flex-1 min-h-0">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={campaignPerformanceData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: '#64748b' }} dy={10} />
+                <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: '#64748b' }} />
+                <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: '#64748b' }} />
+                <Tooltip 
+                  cursor={{ fill: '#f8fafc' }} 
+                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
+                  itemStyle={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase' }}
+                />
+                <Bar yAxisId="left" dataKey="calls" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={20} />
+                <Bar yAxisId="left" dataKey="interested" fill="#6366f1" radius={[4, 4, 0, 0]} barSize={20} />
+                <Bar yAxisId="left" dataKey="siteVisits" fill="#8b5cf6" radius={[4, 4, 0, 0]} barSize={20} />
+                <Bar yAxisId="left" dataKey="bookings" fill="#10b981" radius={[4, 4, 0, 0]} barSize={20} />
+                <Line yAxisId="right" type="monotone" dataKey="conversion" stroke="#f43f5e" strokeWidth={3} dot={{ fill: '#f43f5e', strokeWidth: 2, r: 4 }} activeDot={{ r: 6, strokeWidth: 0 }} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* 2C: Conversion Funnel Comparison */}
+        <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
+          <h3 className="text-sm font-bold text-[#0A2C5E] mb-8">Conversion Funnel Comparison</h3>
+          <div className="space-y-10">
+            {campaignPerformanceData.map((camp, idx) => (
+              <div key={idx} className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold text-slate-700">{camp.name}</span>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Efficiency: {camp.conversion}%</span>
+                </div>
+                <div className="flex h-10 w-full gap-1">
+                  {[
+                    { label: 'Leads', val: camp.calls, color: 'bg-blue-500' },
+                    { label: 'Int.', val: camp.interested, color: 'bg-indigo-500' },
+                    { label: 'Visits', val: camp.siteVisits, color: 'bg-violet-500' },
+                    { label: 'Booked', val: camp.bookings, color: 'bg-emerald-500' }
+                  ].map((stage, sIdx, arr) => {
+                    const width = (stage.val / camp.calls) * 100;
+                    const prevVal = sIdx > 0 ? arr[sIdx-1].val : null;
+                    const dropoff = prevVal ? Math.round((1 - stage.val / prevVal) * 100) : null;
+                    
+                    return (
+                      <div key={sIdx} className="relative group" style={{ width: `${width}%`, minWidth: '40px' }}>
+                        <div className={`h-full ${stage.color} rounded-md opacity-80 hover:opacity-100 transition-all flex items-center px-3 overflow-hidden`}>
+                           <span className="text-[9px] font-black text-white whitespace-nowrap">{stage.val}</span>
+                        </div>
+                        {dropoff !== null && (
+                          <div className="absolute -top-6 left-0 -translate-x-1/2 flex flex-col items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span className="text-[8px] font-black text-rose-500 bg-rose-50 px-1 rounded border border-rose-100">-{dropoff}%</span>
+                          </div>
+                        )}
+                        <div className="absolute -bottom-6 left-0 text-[8px] font-black text-slate-400 uppercase tracking-tight">{stage.label}</div>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
             ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Project Conversion Table */}
-        <section className="col-span-12 lg:col-span-8 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-          <div className="px-6 py-5 border-b border-slate-100">
-             <h2 className="text-sm font-bold text-[#0A2C5E]">Conversion by Project – This Month</h2>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="bg-slate-50/50">
-                <tr>
-                  <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Project</th>
-                  <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Calls</th>
-                  <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Interested</th>
-                  <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Site Visits</th>
-                  <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Bookings</th>
-                  <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Conversion</th>
-                  <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Trend</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {conversionData.map((row, i) => (
-                  <tr key={i} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <span className="text-sm font-bold text-slate-800">{row.project}</span>
-                    </td>
-                    <td className="px-4 py-4 text-sm font-medium text-slate-600">{row.totalCalls}</td>
-                    <td className="px-4 py-4 text-sm font-medium text-slate-600">{row.interested}</td>
-                    <td className="px-4 py-4 text-sm font-bold text-slate-700 text-center">{row.siteVisits}</td>
-                    <td className="px-4 py-4 text-sm font-bold text-slate-700 text-center">{row.bookings}</td>
-                    <td className="px-4 py-4 text-center">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                        parseFloat(row.conversion) > 20 ? 'bg-emerald-50 text-emerald-600' :
-                        parseFloat(row.conversion) > 15 ? 'bg-amber-50 text-amber-600' : 'bg-rose-50 text-rose-600'
-                      }`}>
-                        {row.conversion}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        {row.trend === 'up' ? <ArrowUpRight size={12} className="text-emerald-500" /> : <ArrowDownRight size={12} className="text-rose-500" />}
-                        <span className={`text-xs font-bold ${row.trend === 'up' ? 'text-emerald-600' : 'text-rose-600'}`}>{row.trendValue}</span>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </div>
-
-      {/* Tabs & Campaign List */}
-      <section className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden min-h-[400px]">
+      {/* SECTION 3: TABS & CAMPAIGN LIST */}
+      <section className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden min-h-[400px] mb-10">
         <div className="px-6 border-b border-slate-100 flex items-center justify-between">
           <div className="flex">
             {['inbound', 'outbound', 'all'].map((tab) => (
@@ -360,8 +591,8 @@ const SupervisorDashboard = () => {
               <thead className="bg-slate-50/80">
                 <tr>
                   <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Campaign Name</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Health</th>
                   <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Resolution %</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Pending</th>
                   <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Critical</th>
                   <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Calls Today</th>
                   <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Status</th>
@@ -369,34 +600,78 @@ const SupervisorDashboard = () => {
               </thead>
               <tbody className="divide-y divide-slate-50">
                 {campaignData.inbound.map((campaign) => (
-                  <tr key={campaign.id} onClick={() => navigate(`/campaigns/inbound/${campaign.id}`)} className="group hover:bg-slate-50 transition-colors cursor-pointer">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-blue-100 text-blue-600">
-                          <PhoneIncoming size={16} />
+                  <>
+                    <tr 
+                      key={campaign.id} 
+                      onClick={() => setExpandedCampaign(expandedCampaign === campaign.id ? null : campaign.id)} 
+                      className="group hover:bg-slate-50 transition-colors cursor-pointer"
+                    >
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-blue-100 text-blue-600">
+                            <PhoneIncoming size={16} />
+                          </div>
+                          <div>
+                            <span className="text-sm font-bold text-slate-800">{campaign.title}</span>
+                            <div className="flex items-center gap-1 mt-0.5">
+                              <span className="text-[9px] font-bold text-slate-400 uppercase">Trend:</span>
+                              <Sparkline data={[10, 15, 8, 12, 14, 11, 16]} color="#3b82f6" />
+                            </div>
+                          </div>
                         </div>
-                        <span className="text-sm font-bold text-slate-800">{campaign.title}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                          <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${campaign.resolutionRate}%` }} />
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <div className="inline-flex items-center justify-center h-8 w-8 rounded-full border-2 border-emerald-100 bg-emerald-50 text-[10px] font-black text-emerald-600">
+                          {Math.floor(80 + Math.random() * 15)}
                         </div>
-                        <span className="text-xs font-bold text-slate-600">{campaign.resolutionRate}%</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-center text-sm font-bold text-slate-700">{campaign.pendingCases}</td>
-                    <td className="px-6 py-4 text-center">
-                       <span className={`text-sm font-bold ${campaign.criticalEscalations > 0 ? 'text-rose-600' : 'text-slate-400'}`}>
-                        {campaign.criticalEscalations}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center text-sm font-bold text-slate-700">{campaign.callsToday}</td>
-                    <td className="px-6 py-4 text-right">
-                       <span className="px-2 py-1 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-700">Healthy</span>
-                    </td>
-                  </tr>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div className={`h-full rounded-full ${
+                              campaign.resolutionRate > 85 ? 'bg-emerald-500' :
+                              campaign.resolutionRate > 70 ? 'bg-amber-500' : 'bg-rose-500'
+                            }`} style={{ width: `${campaign.resolutionRate}%` }} />
+                          </div>
+                          <span className="text-xs font-bold text-slate-600">{campaign.resolutionRate}%</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                         <span className={`text-sm font-bold ${campaign.criticalEscalations > 0 ? 'text-rose-600' : 'text-slate-400'}`}>
+                          {campaign.criticalEscalations}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <div className="flex flex-col items-center">
+                          <span className="text-sm font-bold text-slate-700">{campaign.callsToday}</span>
+                          <span className="text-[8px] font-bold text-emerald-500">↑ 14%</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                         <span className="px-2 py-1 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-700">Healthy</span>
+                      </td>
+                    </tr>
+                    {expandedCampaign === campaign.id && (
+                      <tr className="bg-slate-50/50">
+                        <td colSpan={6} className="px-6 py-4">
+                          <div className="grid grid-cols-4 gap-4">
+                            {[1, 2, 3, 4].map(i => (
+                              <div key={i} className="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold">A{i}</div>
+                                  <div>
+                                    <p className="text-[10px] font-bold text-slate-700">Agent Name {i}</p>
+                                    <p className="text-[8px] font-medium text-slate-400">12 Calls · 85% Res</p>
+                                  </div>
+                                </div>
+                                <ArrowRight size={12} className="text-slate-300" />
+                              </div>
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </>
                 ))}
               </tbody>
             </table>
@@ -407,9 +682,9 @@ const SupervisorDashboard = () => {
               <thead className="bg-slate-50/80">
                 <tr>
                   <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Campaign Name</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Health</th>
                   <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Connect Rate</th>
                   <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Conversions</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Calls Made</th>
                   <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Efficiency</th>
                   <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Action</th>
                 </tr>
@@ -419,7 +694,18 @@ const SupervisorDashboard = () => {
                   <tr key={campaign.id} onClick={() => navigate(`/campaigns/outbound/${campaign.id}`)} className="group hover:bg-slate-50 transition-colors cursor-pointer">
                     <td className="px-6 py-4 flex items-center gap-3">
                         <div className="p-2 bg-purple-100 text-purple-600 rounded-lg"><PhoneOutgoing size={16} /></div>
-                        <span className="text-sm font-bold text-slate-800">{campaign.title}</span>
+                        <div>
+                          <span className="text-sm font-bold text-slate-800">{campaign.title}</span>
+                          <div className="flex items-center gap-1 mt-0.5">
+                            <span className="text-[9px] font-bold text-slate-400 uppercase">Trend:</span>
+                            <Sparkline data={[8, 12, 10, 14, 18, 16, 20]} color="#a855f7" />
+                          </div>
+                        </div>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <div className="inline-flex items-center justify-center h-8 w-8 rounded-full border-2 border-purple-100 bg-purple-50 text-[10px] font-black text-purple-600">
+                        {Math.floor(75 + Math.random() * 20)}
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                        <div className="flex items-center gap-2">
@@ -430,7 +716,6 @@ const SupervisorDashboard = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center text-sm font-bold text-emerald-600">{campaign.conversions}</td>
-                    <td className="px-6 py-4 text-center text-sm font-bold text-slate-700">{campaign.callsMade}</td>
                     <td className="px-6 py-4 text-center text-xs font-bold text-slate-500">
                       {campaign.callsMade > 0 ? ((campaign.conversions / campaign.callsMade) * 100).toFixed(1) : 0}%
                     </td>
@@ -452,6 +737,7 @@ const SupervisorDashboard = () => {
                   <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Type</th>
                   <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Campaign Name</th>
                   <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Performance</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Health</th>
                   <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Status</th>
                 </tr>
               </thead>
@@ -463,9 +749,16 @@ const SupervisorDashboard = () => {
                         {campaign.id.startsWith('ib') ? 'Inbound' : 'Outbound'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm font-bold text-slate-800">{campaign.title}</td>
+                    <td className="px-6 py-4">
+                      <span className="text-sm font-bold text-slate-800">{campaign.title}</span>
+                    </td>
                     <td className="px-6 py-4 text-xs font-bold text-slate-500">
                        {campaign.id.startsWith('ib') ? `Res: ${campaign.resolutionRate}%` : `Conv: ${campaign.conversions}`}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <div className="inline-flex items-center justify-center h-7 w-7 rounded-full border border-slate-200 bg-slate-50 text-[9px] font-black text-slate-600">
+                        {Math.floor(70 + Math.random() * 25)}
+                      </div>
                     </td>
                     <td className="px-6 py-4 text-right">
                        <span className="text-xs font-bold text-slate-500">{campaign.status || 'Active'}</span>
@@ -475,6 +768,205 @@ const SupervisorDashboard = () => {
               </tbody>
             </table>
           )}
+        </div>
+      </section>
+
+      {/* SECTION 4: AGENT STATUS + LEAD FUNNEL + ACTIVITY FEED */}
+      <div className="grid grid-cols-12 gap-6 mb-8">
+        {/* Left: Agent Performance Table (40%) */}
+        <section className="col-span-12 xl:col-span-5 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+          <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+            <h2 className="text-sm font-bold text-[#0A2C5E]">Agent Performance</h2>
+            <button className="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline">Full Report</button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="bg-slate-50/50">
+                <tr>
+                  <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Agent</th>
+                  <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
+                  <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Calls</th>
+                  <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">AHT</th>
+                  <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Conv.</th>
+                  <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Res %</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {agentPerformanceData.map((agent, i) => (
+                  <tr 
+                    key={i} 
+                    onClick={() => {
+                      if (agent.status === 'On Call') {
+                        setSelectedAgent({...supervisorAgents[0], name: agent.name, customer: 'John Doe'});
+                      } else {
+                        addToast(`${agent.name} is not currently on a call`, 'info');
+                      }
+                    }}
+                    className="hover:bg-slate-50 cursor-pointer transition-colors group"
+                  >
+                    <td className="px-6 py-4">
+                      <div>
+                        <p className="text-sm font-bold text-slate-800 group-hover:text-[#D71920] transition-colors">{agent.name}</p>
+                        <span className={`text-[9px] font-black uppercase px-1 rounded ${
+                          agent.performance === 'Top Performer' ? 'bg-emerald-50 text-emerald-600' :
+                          agent.performance === 'Average' ? 'bg-blue-50 text-blue-600' : 'bg-rose-50 text-rose-600'
+                        }`}>{agent.performance}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-2">
+                        <div className={`h-2 w-2 rounded-full ${agent.color} animate-pulse`} />
+                        <span className="text-[10px] font-bold text-slate-600">{agent.status}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 text-center text-xs font-bold text-slate-700">{agent.callsToday}</td>
+                    <td className="px-4 py-4 text-center text-xs font-bold text-slate-700">{agent.aht}</td>
+                    <td className="px-4 py-4 text-center text-xs font-bold text-emerald-600">{agent.conversions}</td>
+                    <td className="px-4 py-4 text-center">
+                      <span className={`text-xs font-bold ${agent.resolution > 85 ? 'text-emerald-600' : agent.resolution > 70 ? 'text-amber-600' : 'text-rose-600'}`}>
+                        {agent.resolution}%
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {/* Center: Lead Funnel + KPI sparklines (35%) */}
+        <section className="col-span-12 xl:col-span-4 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+          <div className="px-6 py-5 border-b border-slate-100">
+            <h2 className="text-sm font-bold text-[#0A2C5E]">Lead Conversion Funnel</h2>
+          </div>
+          <div className="p-6 flex-1 flex flex-col justify-center">
+            <div className="space-y-4">
+              {funnelData.map((stage, i) => (
+                <div key={i} className="relative">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{stage.stage}</span>
+                    <span className="text-xs font-bold text-slate-700">{stage.count}</span>
+                  </div>
+                  <div className="h-8 w-full bg-slate-50 rounded-lg overflow-hidden flex items-center relative border border-slate-100">
+                    <div 
+                      className={`h-full ${stage.color} opacity-80 transition-all duration-1000 ease-out flex items-center justify-end px-3`}
+                      style={{ width: stage.percentage }}
+                    >
+                      <span className="text-[10px] font-black text-white">{stage.percentage}</span>
+                    </div>
+                  </div>
+                  {i < funnelData.length - 1 && (
+                    <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center">
+                      <div className="h-2 w-[1px] bg-slate-300" />
+                      <div className="text-[8px] font-black text-rose-500 bg-rose-50 px-1.5 rounded-full border border-rose-100">
+                        -{ (parseFloat(funnelData[i].percentage) - parseFloat(funnelData[i+1].percentage)).toFixed(1) }%
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+            
+            <div className="mt-8 pt-6 border-t border-slate-50 grid grid-cols-2 gap-4">
+              <div className="p-3 bg-blue-50 rounded-xl border border-blue-100">
+                <p className="text-[9px] font-black text-blue-400 uppercase mb-1">Weekly Trend</p>
+                <div className="flex items-end justify-between">
+                  <span className="text-lg font-bold text-blue-700">+14.2%</span>
+                  <Sparkline data={[12, 15, 14, 18, 16, 20, 22]} color="#3b82f6" />
+                </div>
+              </div>
+              <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
+                <p className="text-[9px] font-black text-emerald-400 uppercase mb-1">Efficiency Score</p>
+                <div className="flex items-end justify-between">
+                  <span className="text-lg font-bold text-emerald-700">92%</span>
+                  <Sparkline data={[85, 88, 87, 90, 89, 92, 92]} color="#10b981" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Right: Real-time Activity (25%) */}
+        <section className="col-span-12 xl:col-span-3 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+          <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+            <h2 className="text-sm font-bold text-[#0A2C5E]">Live Activity</h2>
+            <div className="flex items-center gap-1.5">
+               <div className="h-2 w-2 rounded-full bg-rose-500 animate-ping" />
+               <span className="text-[9px] font-black text-rose-500 uppercase tracking-widest">Live</span>
+            </div>
+          </div>
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 max-h-[500px]">
+            {activityFeed.map((item) => (
+              <div key={item.id} className="flex gap-3 group">
+                <div className={`mt-1 h-2 w-2 rounded-full flex-shrink-0 ${
+                  item.type === 'success' ? 'bg-emerald-500' :
+                  item.type === 'error' ? 'bg-rose-500' :
+                  item.type === 'warning' ? 'bg-amber-500' : 'bg-blue-500'
+                }`} />
+                <div className="flex flex-col gap-0.5">
+                  <p className="text-xs font-medium text-slate-700 leading-snug group-hover:text-slate-900 transition-colors">{item.text}</p>
+                  <span className="text-[9px] font-bold text-slate-400">{item.time}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="p-4 border-t border-slate-50">
+            <button className="w-full py-2 bg-slate-50 text-slate-500 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 transition-all border border-slate-200">View History</button>
+          </div>
+        </section>
+      </div>
+
+      {/* SECTION 5: CRITICAL ISSUES PANEL */}
+      <section className="mb-8 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-rose-50/30">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-rose-100 text-rose-600 rounded-lg">
+              <ShieldAlert size={18} />
+            </div>
+            <h2 className="text-sm font-bold text-[#0A2C5E]">Critical Issues Queue</h2>
+          </div>
+          <button className="text-[10px] font-black text-rose-600 uppercase tracking-widest hover:underline">View All Issues</button>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead className="bg-slate-50/50">
+              <tr>
+                <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Issue ID</th>
+                <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Campaign</th>
+                <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Agent</th>
+                <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Issue Type</th>
+                <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Time Open</th>
+                <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Priority</th>
+                <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {criticalIssuesData.map((issue, i) => (
+                <tr key={i} className="hover:bg-slate-50 transition-colors">
+                  <td className="px-6 py-4 text-xs font-bold text-slate-900">{issue.id}</td>
+                  <td className="px-4 py-4 text-xs font-medium text-slate-600">{issue.campaign}</td>
+                  <td className="px-4 py-4 text-xs font-bold text-slate-800">{issue.agent}</td>
+                  <td className="px-4 py-4 text-xs font-medium text-rose-600 italic">{issue.type}</td>
+                  <td className="px-4 py-4 text-xs font-bold text-slate-700 text-center">{issue.timeOpen}</td>
+                  <td className="px-4 py-4 text-center">
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-black ${
+                      issue.priority === 'P1' ? 'bg-rose-100 text-rose-700' :
+                      issue.priority === 'P2' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'
+                    }`}>
+                      {issue.priority}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <button className="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-slate-200">Assign</button>
+                      <button className="px-3 py-1 bg-amber-100 text-amber-700 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-amber-200">Escalate</button>
+                      <button className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-emerald-200">Resolve</button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </section>
 
@@ -690,6 +1182,51 @@ const SupervisorDashboard = () => {
               </div>
               <button type="submit" className="w-full py-5 bg-[#0A2C5E] text-white rounded-2xl text-base font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-[#0c3875] transition-all mt-4">Create Campaign</button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Critical Issues Side Drawer */}
+      {showCriticalDrawer && (
+        <div className="fixed inset-0 z-[200] overflow-hidden">
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowCriticalDrawer(false)} />
+          <div className="absolute inset-y-0 right-0 max-w-full flex">
+            <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
+              <div className="bg-rose-600 p-6 text-white flex justify-between items-center">
+                <div>
+                  <h3 className="text-xl font-bold flex items-center gap-2">
+                    <ShieldAlert size={20} />
+                    Critical Issues Queue
+                  </h3>
+                  <p className="text-xs text-rose-100 font-bold uppercase tracking-widest mt-1">07 Issues requires attention</p>
+                </div>
+                <button onClick={() => setShowCriticalDrawer(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                  <X size={24} />
+                </button>
+              </div>
+              
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                {criticalIssuesData.map((issue, idx) => (
+                  <div key={idx} className="bg-slate-50 rounded-2xl p-5 border border-slate-100 group hover:border-rose-200 transition-all">
+                    <div className="flex justify-between items-start mb-4">
+                      <span className="px-2 py-1 bg-rose-100 text-rose-700 text-[10px] font-black uppercase rounded-lg">{issue.priority}</span>
+                      <span className="text-[10px] font-bold text-slate-400">{issue.timeOpen} ago</span>
+                    </div>
+                    <h4 className="text-sm font-bold text-slate-800 mb-1">{issue.type}</h4>
+                    <p className="text-[11px] font-medium text-slate-500 mb-4">{issue.campaign} · {issue.agent}</p>
+                    
+                    <div className="flex gap-2">
+                      <button className="flex-1 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-100">Review Call</button>
+                      <button className="flex-1 py-2 bg-[#0A2C5E] rounded-xl text-[10px] font-black uppercase tracking-widest text-white hover:bg-[#0c3875]">Take Action</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="p-6 border-t border-slate-100 bg-slate-50/50">
+                <button className="w-full py-4 bg-white border border-slate-200 text-slate-600 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-100 transition-all shadow-sm">Mark All as Read</button>
+              </div>
+            </div>
           </div>
         </div>
       )}

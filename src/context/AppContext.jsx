@@ -211,7 +211,7 @@ export const AppProvider = ({ children }) => {
   // Incoming Call State
   const [incomingCall, setIncomingCall] = useState(null);
   const [customerHistory, setCustomerHistory] = useState([]);
-  const [isNavExpanded, setIsNavExpanded] = useState(true);
+  const [isNavExpanded, setIsNavExpanded] = useState(false);
 
   const addProject = useCallback((project) => {
     setAllProjects((prev) => [...prev, project]);

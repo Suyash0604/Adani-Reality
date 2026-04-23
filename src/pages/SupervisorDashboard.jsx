@@ -250,8 +250,16 @@ const SupervisorDashboard = () => {
             {agentStatusData.map((agent, i) => (
               <div 
                 key={i} 
-                onClick={() => setSelectedAgent({...supervisorAgents[0], name: agent.name, customer: agent.detail.split('·')[1]?.trim() || 'Sneha ji'})}
-                className="px-6 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0 cursor-pointer group"
+                onClick={() => {
+                  if (agent.status === 'On Call') {
+                    setSelectedAgent({...supervisorAgents[0], name: agent.name, customer: agent.detail.split('·')[1]?.trim() || 'Sneha ji'});
+                  } else {
+                    addToast(`${agent.name} is not currently on a call`, 'info');
+                  }
+                }}
+                className={`px-6 py-4 flex items-center justify-between transition-colors border-b border-slate-50 last:border-0 ${
+                  agent.status === 'On Call' ? 'hover:bg-slate-50 cursor-pointer group' : 'opacity-60 cursor-not-allowed'
+                }`}
               >
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-[#0A2C5E] group-hover:bg-blue-100 group-hover:text-blue-700 transition-colors">

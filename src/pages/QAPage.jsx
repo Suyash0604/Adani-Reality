@@ -49,13 +49,15 @@ const PerformanceIndicator = ({ label, status }) => {
 
 const QAPage = () => {
   const { callId } = useParams();
-  const { qaResult, lastCallSummary, callRecords } = useApp();
+  const { qaResult, lastCallSummary, callRecords, addEscalation } = useApp();
   const { user } = useAuth();
   const navigate = useNavigate();
   
   const isAgent = user?.role === 'agent';
   const [loading, setLoading] = useState(true);
   const [showEscalateModal, setShowEscalateModal] = useState(false);
+  const [escalationReason, setEscalationReason] = useState('');
+  const [stakeholder, setStakeholder] = useState('Rahul Mehra (Sr. Quality Head)');
 
   const activeCallData = useMemo(() => {
     if (callId) {
@@ -158,19 +160,26 @@ const QAPage = () => {
                     <span className={`text-5xl font-black ${isExcellent ? 'text-[#0A2C5E]' : 'text-amber-500'}`}>{score}</span>
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Points</span>
                  </div>
-                 {/* Circular Progress Overlay */}
-                 <svg className="absolute inset-x-0 inset-y-0 w-44 h-44 -rotate-90 pointer-events-none" viewBox="0 0 100 100">
-                   <circle 
-                    cx="50" cy="50" r="44" 
-                    fill="transparent" 
-                    stroke="currentColor" 
-                    strokeWidth="4" 
-                    className={`${isExcellent ? 'text-[#0A2C5E]' : 'text-amber-400'} opacity-20`}
-                    strokeDasharray="276"
-                    strokeDashoffset={276 - (276 * score / 100)}
-                    strokeLinecap="round"
-                   />
-                 </svg>
+                  {/* Circular Progress Overlay */}
+                  <svg className="absolute inset-0 w-40 h-40 -rotate-90 pointer-events-none" viewBox="0 0 100 100">
+                    <circle 
+                     cx="50" cy="50" r="44" 
+                     fill="transparent" 
+                     stroke="currentColor" 
+                     strokeWidth="12" 
+                     className={`${isExcellent ? 'text-[#0A2C5E]' : 'text-amber-400'} opacity-20`}
+                    />
+                    <circle 
+                     cx="50" cy="50" r="44" 
+                     fill="transparent" 
+                     stroke="currentColor" 
+                     strokeWidth="12" 
+                     className={`${isExcellent ? 'text-[#0A2C5E]' : 'text-amber-400'}`}
+                     strokeDasharray="276"
+                     strokeDashoffset={276 - (276 * score / 100)}
+                     strokeLinecap="round"
+                    />
+                  </svg>
               </div>
 
               <div className={`px-4 py-1 rounded-full text-xs font-black tracking-widest uppercase shadow-sm border ${
@@ -322,8 +331,11 @@ const QAPage = () => {
             <div className="space-y-4">
               <div>
                 <label className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-400 block mb-2">Escalate To</label>
-                <select className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-700 focus:border-[#0A2C5E] focus:ring-0 outline-none transition-all">
-                  <option>Select Stakeholder</option>
+                <select 
+                  value={stakeholder}
+                  onChange={(e) => setStakeholder(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-700 focus:border-[#0A2C5E] focus:ring-0 outline-none transition-all"
+                >
                   <option>Rahul Mehra (Sr. Quality Head)</option>
                   <option>Priya Sharma (Operations Manager)</option>
                   <option>Amit Singh (Project Lead)</option>
@@ -333,6 +345,8 @@ const QAPage = () => {
               <div>
                 <label className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-400 block mb-2">Reason for Escalation</label>
                 <textarea 
+                  value={escalationReason}
+                  onChange={(e) => setEscalationReason(e.target.value)}
                   placeholder="Describe the critical deviation or required intervention..."
                   className="w-full h-24 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-700 focus:border-[#0A2C5E] focus:ring-0 outline-none transition-all resize-none"
                 />
@@ -346,15 +360,21 @@ const QAPage = () => {
               >
                 Cancel
               </button>
-              <button
-                onClick={() => {
-                  alert('Session Escalated Successfully');
-                  setShowEscalateModal(false);
-                }}
-                className="py-3 rounded-xl bg-rose-600 text-white text-sm font-black uppercase tracking-widest hover:bg-rose-700 shadow-lg shadow-rose-200 transition-all active:scale-95"
-              >
-                Confirm
-              </button>
+                <button
+                  onClick={() => {
+                    addEscalation({
+                      customer: activeCallData.customer,
+                      escalatedTo: stakeholder,
+                      reason: escalationReason || 'Quality Deviation identified during session review.',
+                      sessionDate: activeCallData.date
+                    });
+                    setShowEscalateModal(false);
+                    setEscalationReason('');
+                  }}
+                  className="py-3 rounded-xl bg-rose-600 text-white text-sm font-black uppercase tracking-widest hover:bg-rose-700 shadow-lg shadow-rose-200 transition-all active:scale-95"
+                >
+                  Confirm
+                </button>
             </div>
           </div>
         </div>

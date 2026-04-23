@@ -297,6 +297,8 @@ const CallRecords = () => {
                   <tr>
                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Interaction</th>
                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Agent</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Duration</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Sentiment</th>
                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Quality</th>
                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Action</th>
                   </tr>
@@ -315,6 +317,15 @@ const CallRecords = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4 text-xs font-bold text-slate-600">{row.agent}</td>
+                        <td className="px-6 py-4 text-xs font-bold text-slate-500">{row.duration}</td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ${
+                             row.sentiment === 'Positive' ? 'bg-emerald-50 text-emerald-600' :
+                             row.sentiment === 'Negative' || row.sentiment === 'Mixed' ? 'bg-rose-50 text-rose-600' : 'bg-slate-100 text-slate-500'
+                          }`}>
+                             {row.sentiment}
+                          </span>
+                        </td>
                         <td className="px-6 py-4 text-center">
                            <span className={`text-sm font-black ${row.score >= 80 ? 'text-emerald-600' : 'text-rose-600'}`}>{row.score}</span>
                         </td>

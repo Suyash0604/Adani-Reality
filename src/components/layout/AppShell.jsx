@@ -43,7 +43,7 @@ const AppShell = ({ title, children, fitViewport = false }) => {
   return (
     <div className="h-screen overflow-hidden bg-slate-100 text-slate-900 flex flex-col">
       <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/80 backdrop-blur-md px-6 py-3 shadow-sm shrink-0">
-        <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between">
+        <div className="mx-auto flex w-full items-center justify-between">
           <div className="flex items-center gap-4">
             <img 
               src="https://www.tandtrealty.in/image/logo/new/comp/adani-realty.png" 
@@ -78,7 +78,7 @@ const AppShell = ({ title, children, fitViewport = false }) => {
         </div>
       </header>
 
-      <div className="flex flex-1 w-full max-w-[1600px] mx-auto relative overflow-hidden">
+      <div className="flex flex-1 w-full mx-auto relative overflow-hidden">
         {/* Navigation - Collapsible via Button inside Sidebar */}
         <aside 
           className={`h-full ${isExpanded ? 'w-64' : 'w-16'} shrink-0 bg-white border-r border-slate-200 transition-all duration-300 ease-in-out shadow-lg lg:shadow-none flex flex-col`}

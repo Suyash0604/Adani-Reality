@@ -165,6 +165,7 @@ export const AppProvider = ({ children }) => {
   // Incoming Call State
   const [incomingCall, setIncomingCall] = useState(null);
   const [customerHistory, setCustomerHistory] = useState([]);
+  const [isNavExpanded, setIsNavExpanded] = useState(true);
 
   const addProject = useCallback((project) => {
     setAllProjects((prev) => [...prev, project]);
@@ -356,6 +357,8 @@ export const AppProvider = ({ children }) => {
       campaignData: { outbound: outboundCampaigns, inbound: inboundCampaigns },
       escalations,
       addEscalation,
+      isNavExpanded,
+      setIsNavExpanded,
     }),
     [
       callState,
@@ -386,6 +389,7 @@ export const AppProvider = ({ children }) => {
       customerHistory,
       escalations,
       addEscalation,
+      isNavExpanded,
     ],
   );
 

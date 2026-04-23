@@ -103,6 +103,19 @@ const AgentConsole = () => {
     return () => { if (aiThinkingTimerRef.current) clearTimeout(aiThinkingTimerRef.current); };
   }, [latestCustomerMessage, callState]);
 
+  useEffect(() => {
+    if (callState === 'dialing' && !dialingTimerRef.current) {
+      callStartRef.current = new Date();
+      dialingTimerRef.current = setTimeout(() => setCallState('active'), 2000);
+    }
+    return () => {
+      if (callState !== 'dialing' && dialingTimerRef.current) {
+        clearTimeout(dialingTimerRef.current);
+        dialingTimerRef.current = null;
+      }
+    };
+  }, [callState, setCallState]);
+
   const onNewScriptMessage = useCallback(
     (next) => {
       if (next.sender === 'customer') setAiAnalyzing(true);

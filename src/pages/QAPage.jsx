@@ -56,6 +56,7 @@ const QAPage = () => {
   const isAgent = user?.role === 'agent';
   const [loading, setLoading] = useState(true);
   const [showEscalateModal, setShowEscalateModal] = useState(false);
+  const [showTranscript, setShowTranscript] = useState(false);
   const [escalationReason, setEscalationReason] = useState('');
   const [stakeholder, setStakeholder] = useState('Rahul Mehra (Sr. Quality Head)');
 
@@ -296,7 +297,10 @@ const QAPage = () => {
                 {isAgent ? "Session Summary" : "Management Decisions"}
               </h3>
               <div className="grid grid-cols-2 gap-4">
-                <button className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-slate-100 hover:border-[#0A2C5E] transition-all group">
+                <button 
+                  onClick={() => setShowTranscript(true)}
+                  className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-slate-100 hover:border-[#0A2C5E] transition-all group"
+                >
                   <FileText size={20} className="text-slate-600 group-hover:text-[#0A2C5E]" />
                   <span className="text-[10px] font-black uppercase tracking-widest">Full Transcript</span>
                 </button>
@@ -375,6 +379,62 @@ const QAPage = () => {
                 >
                   Confirm
                 </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Full Transcript Modal */}
+      {showTranscript && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-6">
+          <div className="w-full max-w-2xl rounded-3xl bg-white shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col max-h-[80vh]">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between shrink-0">
+               <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-xl bg-blue-50 text-blue-600">
+                    <MessageSquare size={20} />
+                  </div>
+                  <h3 className="text-xl font-black text-[#0A2C5E]">Call Transcript</h3>
+               </div>
+               <button onClick={() => setShowTranscript(false)} className="p-2 hover:bg-slate-100 rounded-full transition-all">
+                  <ArrowLeft size={20} className="text-slate-400 rotate-180" />
+               </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-8 space-y-6">
+               {(activeCallData.transcript && activeCallData.transcript.length > 0) ? (
+                 activeCallData.transcript.map((msg, idx) => (
+                    <div key={idx} className={`flex flex-col ${msg.sender === 'agent' ? 'items-end' : 'items-start'}`}>
+                       <div className="flex items-center gap-2 mb-1 px-1">
+                          <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                             {msg.sender === 'agent' ? 'Riya Sharma (Agent)' : `${activeCallData.customer} (Customer)`}
+                          </span>
+                       </div>
+                       <div className={`max-w-[85%] px-5 py-3 rounded-2xl text-sm font-medium leading-relaxed shadow-sm ${
+                          msg.sender === 'agent' 
+                            ? 'bg-[#0A2C5E] text-white rounded-tr-none' 
+                            : 'bg-slate-100 text-slate-700 rounded-tl-none'
+                       }`}>
+                          {msg.text}
+                       </div>
+                    </div>
+                 ))
+               ) : (
+                 <div className="text-center py-20">
+                    <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-200 mx-auto mb-4">
+                       <FileText size={32} />
+                    </div>
+                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">No transcript data found for this session</p>
+                 </div>
+               )}
+            </div>
+
+            <div className="p-6 border-t border-slate-100 flex justify-end shrink-0">
+               <button
+                 onClick={() => setShowTranscript(false)}
+                 className="px-8 py-3 rounded-xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all"
+               >
+                 Close Transcript
+               </button>
             </div>
           </div>
         </div>

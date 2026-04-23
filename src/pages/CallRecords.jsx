@@ -115,7 +115,7 @@ const CallRecords = () => {
                 viewMode === 'manager' ? 'bg-[#0A2C5E] text-white shadow-md' : 'text-slate-400 hover:bg-slate-50'
               }`}
             >
-              <BarChart3 size={14} /> Decision Dashboard
+              <BarChart3 size={14} /> Agent Performance
             </button>
             <button 
               onClick={() => setViewMode('individual')}
@@ -237,8 +237,10 @@ const CallRecords = () => {
                     <div key={call.id} className="p-4 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-white hover:shadow-lg transition-all group">
                        <div className="flex justify-between items-start mb-3">
                           <div>
+                             <p className="text-[10px] font-black text-slate-400 uppercase mb-1">Customer</p>
                              <p className="text-xs font-black text-slate-800">{call.customer}</p>
-                             <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase">{call.agent}</p>
+                             <p className="text-[10px] font-black text-slate-400 mt-2 uppercase mb-1">Agent</p>
+                             <p className="text-xs font-bold text-slate-500">{call.agent}</p>
                           </div>
                           <span className="text-sm font-black text-rose-600 bg-rose-50 px-2 py-1 rounded-lg">{call.score}</span>
                        </div>

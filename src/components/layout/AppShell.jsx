@@ -5,17 +5,18 @@ import {
   LogOut, 
   LayoutDashboard, 
   Phone, 
-  BarChart3, 
-  List, 
-  Shield, 
+  History, 
+  ShieldAlert,
   User, 
   ChevronRight,
   Menu,
   ChevronLeft,
-  ShieldAlert,
-  History
+  Settings,
+  HelpCircle,
+  Search
 } from 'lucide-react';
 import { useAuth } from '../../context/useAuth';
+import { useApp } from '../../context/useApp';
 
 const navByRole = {
   agent: [
@@ -29,125 +30,139 @@ const navByRole = {
     { label: 'Escalations', to: '/escalations', icon: ShieldAlert },
   ],
   admin: [
-    { label: 'Security', to: '/admin', icon: Shield },
+    { label: 'Security', to: '/admin', icon: ShieldAlert },
     { label: 'Call Records', to: '/records', icon: History },
   ],
 };
 
-const AppShell = ({ title, children, fitViewport = false }) => {
+const AppShell = ({ title, children }) => {
   const { user, logout } = useAuth();
-  const [isExpanded, setIsExpanded] = useState(false);
+  const { isNavExpanded: isExpanded, setIsNavExpanded: setIsExpanded } = useApp();
   const location = useLocation();
   const navItems = navByRole[user?.role] ?? [];
 
   return (
-    <div className="h-screen overflow-hidden bg-slate-100 text-slate-900 flex flex-col">
-      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/80 backdrop-blur-md px-6 py-3 shadow-sm shrink-0">
-        <div className="mx-auto flex w-full items-center justify-between">
+    <div className="h-screen overflow-hidden bg-[#FDFDFF] text-slate-900 flex flex-col font-sans">
+      {/* --- TOP HEADER --- */}
+      <header className="h-16 shrink-0 bg-white border-b border-slate-100 flex items-center justify-between px-6 z-50">
+        <div className="flex items-center gap-12">
+          {/* LOGO - AS REQUESTED: DO NOT CHANGE */}
           <div className="flex items-center gap-4">
-            <img 
-              src="https://www.tandtrealty.in/image/logo/new/comp/adani-realty.png" 
-              alt="Adani Realty" 
-              className="h-8 object-contain"
-            />
-            <div className="h-8 w-[1px] bg-slate-200 mx-2" />
-            <h1 className="text-xl font-bold text-[#0A2C5E] tracking-tight">{title}</h1>
+             <img 
+               src="https://www.tandtrealty.in/image/logo/new/comp/adani-realty.png" 
+               alt="Adani Realty" 
+               className="h-8 object-contain"
+             />
+             <div className="h-4 w-px bg-slate-200" />
+             <h1 className="text-sm font-black text-[#0A2C5E] uppercase tracking-[0.15em]">{title}</h1>
           </div>
-          <div className="flex items-center gap-4">
-            <button className="relative rounded-full bg-slate-100 p-2 text-slate-600 transition hover:bg-slate-200" type="button">
-              <Bell size={18} />
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-[#D71920] border-2 border-white" />
-            </button>
-            <div className="flex items-center gap-3 rounded-xl bg-slate-50 border border-slate-200 px-3 py-1.5">
-              <div className="rounded-full bg-[#0A2C5E] p-1.5 text-white">
-                <User size={14} />
-              </div>
-              <div className="text-xs">
-                <p className="font-bold text-[#0A2C5E]">{user?.name}</p>
-                <p className="text-[10px] uppercase font-bold text-slate-400">{user?.role}</p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={logout}
-              className="inline-flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-2 text-sm font-bold text-slate-600 hover:bg-slate-200 transition-all active:scale-95"
-            >
-              <LogOut size={16} />
-            </button>
+
+          {/* SEARCH BAR - MODERN TOUCH */}
+          <div className="hidden md:flex items-center bg-slate-50 border border-slate-100 rounded-full px-4 py-1.5 w-80 group focus-within:bg-white focus-within:border-blue-200 transition-all">
+             <Search size={14} className="text-slate-400 group-focus-within:text-[#0A2C5E]" />
+             <input 
+               type="text" 
+               placeholder="Search properties, leads..." 
+               className="bg-transparent border-none outline-none px-3 text-xs font-medium text-slate-600 placeholder:text-slate-300 w-full"
+             />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
+             <button className="h-10 w-10 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-50 hover:text-[#0A2C5E] transition-all relative">
+                <Bell size={18} />
+                <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white" />
+             </button>
+             <button className="h-10 w-10 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-50 hover:text-[#0A2C5E] transition-all">
+                <HelpCircle size={18} />
+             </button>
+          </div>
+
+          <div className="h-8 w-px bg-slate-100" />
+
+          {/* USER PROFILE - MODERN CLEAN */}
+          <div className="flex items-center gap-3 group cursor-pointer">
+             <div className="text-right hidden sm:block">
+                <p className="text-xs font-black text-[#0A2C5E] leading-tight">{user?.name}</p>
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{user?.role}</p>
+             </div>
+             <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 flex items-center justify-center text-[#0A2C5E] shadow-sm overflow-hidden group-hover:shadow-md transition-all">
+                <User size={20} />
+             </div>
+             <button
+               onClick={logout}
+               className="p-2 rounded-lg text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all"
+             >
+               <LogOut size={16} />
+             </button>
           </div>
         </div>
       </header>
 
-      <div className="flex flex-1 w-full mx-auto relative overflow-hidden">
-        {/* Navigation - Collapsible via Button inside Sidebar */}
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* --- SIDEBAR - MODERN MINIMAL --- */}
         <aside 
-          className={`h-full ${isExpanded ? 'w-64' : 'w-16'} shrink-0 bg-white border-r border-slate-200 transition-all duration-300 ease-in-out shadow-lg lg:shadow-none flex flex-col`}
+          className={`h-full ${isExpanded ? 'w-64' : 'w-20'} bg-white border-r border-slate-50 flex flex-col transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] z-40`}
         >
-          <div className="p-3">
-            <button 
-              onClick={() => setIsExpanded(!isExpanded)}
-              className={`mb-4 flex w-full items-center justify-center rounded-xl p-2.5 transition-all ${
-                isExpanded ? 'hover:bg-slate-100 text-slate-500' : 'bg-[#0A2C5E]/5 text-[#0A2C5E]'
-              }`}
-            >
-              {isExpanded ? <ChevronLeft size={20} /> : <Menu size={20} />}
-            </button>
+          {/* TOP TOGGLE */}
+          <div className="p-4 border-b border-slate-50">
+             <button 
+               onClick={() => setIsExpanded(!isExpanded)}
+               className="w-full flex items-center justify-center h-10 rounded-xl text-[#0A2C5E] bg-blue-50/50 hover:bg-blue-50 transition-all group"
+             >
+                <div className={`transition-transform duration-500 ${isExpanded ? 'rotate-0' : 'rotate-180'}`}>
+                  <ChevronLeft size={18} />
+                </div>
+             </button>
+          </div>
 
-            <p className="mb-4 text-[10px] font-bold uppercase tracking-widest text-slate-400 text-center transition-all">
-              {isExpanded ? (
-                <span className="block px-1 text-left">Navigation</span>
-              ) : (
-                <span>•••</span>
-              )}
-            </p>
-            <nav className="space-y-1.5">
-              {navItems.map((item) => {
-                const active = location.pathname.startsWith(item.to);
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    className={`flex items-center gap-4 rounded-xl px-3.5 py-3 text-sm font-bold transition-all relative group/item ${
-                      active 
-                        ? 'bg-[#0A2C5E] text-white shadow-md' 
-                        : 'text-slate-500 hover:bg-slate-50'
-                    }`}
-                  >
-                    <Icon size={20} className="shrink-0" />
-                    <span className={`${isExpanded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200 whitespace-nowrap`}>
+          {/* NAV ITEMS */}
+          <div className="flex-1 px-4 py-8 space-y-2 overflow-y-auto scrollbar-hide">
+            {navItems.map((item) => {
+              const active = location.pathname.startsWith(item.to);
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className={`group relative flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-300 ${
+                    active 
+                      ? 'bg-[#0A2C5E] text-white shadow-xl shadow-blue-100' 
+                      : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600'
+                  }`}
+                >
+                  <div className={`shrink-0 transition-transform duration-300 ${active ? 'scale-110' : 'group-hover:scale-110'}`}>
+                    <Icon size={18} />
+                  </div>
+                  <span className={`text-[11px] font-black uppercase tracking-[0.1em] transition-all duration-300 ${isExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 pointer-events-none'}`}>
+                    {item.label}
+                  </span>
+                  
+                  {/* Active Indicator Pin */}
+                  {active && (
+                    <div className="absolute left-0 w-1 h-4 bg-white rounded-r-full my-auto inset-y-0" />
+                  )}
+
+                  {/* Tooltip for collapsed state */}
+                  {!isExpanded && (
+                    <div className="absolute left-full ml-4 px-3 py-1.5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all pointer-events-none z-50 shadow-2xl">
                       {item.label}
-                    </span>
-                    {active && isExpanded && (
-                      <div className="absolute right-2 opacity-100">
-                        <ChevronRight size={14} />
-                      </div>
-                    )}
-                    {/* Tooltip for collapsed state */}
-                    {!isExpanded && (
-                      <div className="absolute left-14 bg-slate-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-xl">
-                        {item.label}
-                      </div>
-                    )}
-                  </Link>
-                );
-              })}
-            </nav>
+                    </div>
+                  )}
+                </Link>
+              );
+            })}
           </div>
-          
-          <div className={`mt-auto p-4 border-t border-slate-50 ${isExpanded ? 'opacity-100' : 'opacity-0 pointer-events-none'} transition-opacity`}>
-            <div className="rounded-xl bg-orange-50 p-3">
-              <p className="text-[10px] font-bold text-orange-800 uppercase">Support</p>
-              <p className="text-[11px] text-orange-600 mt-1">Need help? Contact IT helpdesk at ext. 404</p>
-            </div>
-          </div>
+
+          {/* BOTTOM CONTROLS (Empty since settings removed) */}
         </aside>
 
-        {/* Main Content */}
-        <main 
-          className="flex-1 transition-all duration-300 px-6 py-6 overflow-y-auto"
-        >
-          {children}
+        {/* --- MAIN CONTENT AREA --- */}
+        <main className="flex-1 overflow-y-auto px-10 py-10 bg-[#FDFDFF] scroll-smooth scrollbar-hide">
+           <div className="max-w-[1920px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
+             {children}
+           </div>
         </main>
       </div>
     </div>

@@ -14,7 +14,7 @@ const Login = () => {
     e.preventDefault();
     // AuthContext expects an object { email, role }
     if (login({ email, password, role })) {
-      navigate(role === 'agent' ? '/agent' : '/supervisor');
+      navigate(role === 'agent' ? '/salesforce' : '/supervisor');
     } else {
       alert('Invalid credentials');
     }

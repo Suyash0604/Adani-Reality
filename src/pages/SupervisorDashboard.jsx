@@ -47,7 +47,10 @@ import {
   Cell,
   AreaChart,
   Area,
-  ReferenceLine
+  ReferenceLine,
+  PieChart,
+  Pie,
+  Label
 } from 'recharts';
 import { supervisorAgents, supervisorKpis, campaignData } from '../data/mockData';
 import { AppContext } from '../context/appContextObject';
@@ -134,6 +137,36 @@ const generate7DayData = (base, variance, type = 'count') => {
       : Math.max(0, Math.round(base + (Math.random() * variance * 2 - variance)))
   }));
 };
+
+const hourlyCallData = [
+  { hour: '9 AM', inbound: 12, outbound: 8 },
+  { hour: '10 AM', inbound: 18, outbound: 10 },
+  { hour: '11 AM', inbound: 25, outbound: 15 },
+  { hour: '12 PM', inbound: 32, outbound: 12 },
+  { hour: '1 PM', inbound: 28, outbound: 10 },
+  { hour: '2 PM', inbound: 35, outbound: 16, isPeak: true },
+  { hour: '3 PM', inbound: 30, outbound: 14, isNow: true },
+  { hour: '4 PM', inbound: 22, outbound: 12 },
+  { hour: '5 PM', inbound: 18, outbound: 10 },
+  { hour: '6 PM', inbound: 15, outbound: 8 },
+  { hour: '7 PM', inbound: 10, outbound: 5 },
+  { hour: '8 PM', inbound: 5, outbound: 3 },
+];
+
+const projectCallData = [
+  { name: 'Realty One', calls: 142, color: '#3b82f6' },
+  { name: 'Elysium', calls: 88, color: '#6366f1' },
+  { name: 'Codename ONE', calls: 112, color: '#8b5cf6' },
+  { name: 'Aangan', calls: 42, color: '#10b981' },
+];
+
+const outcomeData = [
+  { name: 'Converted', value: 28, color: '#10b981' },
+  { name: 'Interested', value: 85, color: '#3b82f6' },
+  { name: 'Not Interested', value: 45, color: '#94a3b8' },
+  { name: 'No Answer', value: 112, color: '#f43f5e' },
+  { name: 'Callback', value: 42, color: '#f59e0b' },
+];
 
 const campaignTrendData = {
   'ib-1': { // Grievance Redressal
@@ -1153,37 +1186,58 @@ const SupervisorDashboard = () => {
       {/* Total Calls Breakdown Modal */}
       {showCallsBreakdown && (
         <div className="fixed inset-0 z-[160] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-           <div className="w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden p-10 animate-in zoom-in-95 duration-300">
-              <div className="flex justify-between items-start mb-8">
-                <h3 className="text-2xl font-bold text-[#0A2C5E]">Total Calls — Today Breakdown</h3>
-                <button onClick={() => setShowCallsBreakdown(false)} className="text-slate-400 hover:text-slate-600 p-1 transition-colors hover:bg-slate-100 rounded-full"><X size={24} /></button>
+          <div className="w-full max-w-[680px] bg-white rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+            {/* Header */}
+            <div className="px-8 py-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
+              <h3 className="text-xl font-black text-[#0A2C5E] tracking-tight uppercase">Total Calls — Today Breakdown</h3>
+              <button onClick={() => setShowCallsBreakdown(false)} className="text-slate-400 hover:text-slate-600 p-2 transition-colors hover:bg-white rounded-full">
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="p-8 space-y-8">
+              {/* SECTION 1: Top Stats Row */}
+              <div className="grid grid-cols-4 gap-4">
+                {[
+                  { label: 'Inbound', value: 198, total: 312, color: '#3b82f6', labelFull: 'INBOUND' },
+                  { label: 'Outbound', value: 114, total: 312, color: '#a855f7', labelFull: 'OUTBOUND' },
+                  { label: 'AI Only', value: 84, total: 312, color: '#14b8a6', labelFull: 'AI ONLY' },
+                  { label: 'Agent', value: 228, total: 312, color: '#f59e0b', labelFull: 'AGENT' },
+                ].map((stat, i) => {
+                  const percentage = Math.round((stat.value / stat.total) * 100);
+                  const circumference = 2 * Math.PI * 22;
+                  const offset = circumference - (percentage / 100) * circumference;
+                  return (
+                    <div key={i} className="flex flex-col items-center">
+                      <div className="relative h-14 w-14 flex items-center justify-center mb-2">
+                        <svg className="absolute inset-0 -rotate-90" viewBox="0 0 50 50">
+                          <circle cx="25" cy="25" r="22" stroke="#f1f5f9" strokeWidth="4" fill="none" />
+                          <circle cx="25" cy="25" r="22" stroke={stat.color} strokeWidth="4" fill="none" strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" />
+                        </svg>
+                        <span className="text-sm font-bold text-[#0A2C5E]">{stat.value}</span>
+                      </div>
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight text-center">{stat.labelFull}</p>
+                      <p className="text-[8px] font-bold text-slate-400 mt-0.5">{percentage}% of total</p>
+                    </div>
+                  );
+                })}
               </div>
-              
-              <div className="grid grid-cols-2 gap-y-12 gap-x-8 mb-10">
-                <div className="text-center group border-r border-slate-100">
-                   <p className="text-4xl font-bold text-[#0A2C5E] mb-1">198</p>
-                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Inbound</p>
-                </div>
-                <div className="text-center group">
-                   <p className="text-4xl font-bold text-[#0A2C5E] mb-1">114</p>
-                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Outbound</p>
-                </div>
-                <div className="text-center group border-r border-slate-100">
-                   <p className="text-4xl font-bold text-[#0A2C5E] mb-1">84</p>
-                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">AI Only</p>
-                </div>
-                <div className="text-center group">
-                   <p className="text-4xl font-bold text-[#0A2C5E] mb-1">228</p>
-                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Agent Handled</p>
-                </div>
-              </div>
-              
-              <p className="text-xs font-bold text-slate-400 italic mb-8">Peak hour: 2 PM — 51 calls. Busiest project: Realty One (142 calls)</p>
-              
-              <button onClick={() => setShowCallsBreakdown(false)} className="px-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all">
+            </div>
+
+            {/* Footer Actions */}
+            <div className="px-8 py-6 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+              <button className="flex items-center gap-2 text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline">
+                <FileText size={14} />
+                Download Full Report
+              </button>
+              <button 
+                onClick={() => setShowCallsBreakdown(false)} 
+                className="px-8 py-2.5 bg-[#0A2C5E] rounded-xl text-[10px] font-black text-white uppercase tracking-widest hover:bg-[#0c3875] transition-all shadow-md"
+              >
                 Close
               </button>
-           </div>
+            </div>
+          </div>
         </div>
       )}
 

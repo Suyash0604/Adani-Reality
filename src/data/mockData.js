@@ -163,7 +163,7 @@ export const campaignData = {
   inbound: [
     {
       id: 'ib-1',
-      title: 'Customer Grievance',
+      title: 'Grievance Redressal',
       callsToday: 145,
       resolutionRate: 68,
       pendingCases: 24,
@@ -181,7 +181,7 @@ export const campaignData = {
     },
     {
       id: 'ib-2',
-      title: 'Customer Support',
+      title: 'Customer Service',
       callsToday: 320,
       resolutionRate: 85,
       pendingCases: 12,
@@ -196,7 +196,7 @@ export const campaignData = {
     },
     {
       id: 'ib-3',
-      title: 'Enquiry',
+      title: 'Sales Enquiry',
       callsToday: 775,
       resolutionRate: 92,
       pendingCases: 0,

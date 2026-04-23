@@ -63,13 +63,13 @@ const CallControlBar = ({
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Transfer Call to</p>
           </div>
           <button onClick={() => handleTransfer('Support')} className="w-full flex items-center gap-3 px-4 py-2.5 text-[11px] font-bold text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">
-            <MessageSquare size={14} /> Customer Support
+            <MessageSquare size={14} /> Customer Service
           </button>
           <button onClick={() => handleTransfer('Grievance')} className="w-full flex items-center gap-3 px-4 py-2.5 text-[11px] font-bold text-slate-600 hover:bg-rose-50 hover:text-rose-600 transition-colors">
-            <ShieldAlert size={14} /> Grievance
+            <ShieldAlert size={14} /> Grievance Redressal
           </button>
           <button onClick={() => handleTransfer('Inquiry')} className="w-full flex items-center gap-3 px-4 py-2.5 text-[11px] font-bold text-slate-600 hover:bg-emerald-50 hover:text-emerald-600 transition-colors">
-            <Search size={14} /> Inquiry
+            <Search size={14} /> Sales Enquiry
           </button>
         </div>
       )}

@@ -19,7 +19,7 @@ import { useAuth } from '../../context/useAuth';
 
 const navByRole = {
   agent: [
-    { label: 'CRM', to: '/salesforce', icon: LayoutDashboard },
+    { label: 'Dashboard', to: '/salesforce', icon: LayoutDashboard },
     { label: 'Agent Console', to: '/agent', icon: Phone },
     { label: 'Call Records', to: '/records', icon: History },
   ],

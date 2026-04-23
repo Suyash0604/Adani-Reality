@@ -29,7 +29,7 @@ const navByRole = {
   ],
 };
 
-const AppShell = ({ title, children }) => {
+const AppShell = ({ title, children, fitViewport = false }) => {
   const { user, logout } = useAuth();
   const { isNavExpanded: isExpanded, setIsNavExpanded: setIsExpanded } = useApp();
   const location = useLocation();
@@ -133,8 +133,8 @@ const AppShell = ({ title, children }) => {
         </aside>
 
         {/* --- MAIN CONTENT AREA --- */}
-        <main className="flex-1 overflow-y-auto px-10 py-10 bg-[#FDFDFF] scroll-smooth scrollbar-hide">
-           <div className="max-w-[1920px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <main className={`flex-1 ${fitViewport ? 'overflow-hidden' : 'overflow-y-auto px-10 py-10'} bg-[#FDFDFF] scroll-smooth scrollbar-hide`}>
+           <div className={`h-full ${fitViewport ? '' : 'max-w-[1920px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700'}`}>
              {children}
            </div>
         </main>

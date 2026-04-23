@@ -311,20 +311,22 @@ const AgentConsole = () => {
               </div>
 
               {/* Right: AI Assistant (25%) */}
-              <div className="w-[25%] shrink-0 border-l border-slate-200 bg-white p-4 overflow-y-auto z-10 shadow-[-10px_0_30px_rgba(0,0,0,0.02)]">
-                <AIAssistPanel
-                  suggestions={callState === 'ended' ? [] : dynamicSuggestions}
-                  latestCustomerMessage={latestCustomerMessage}
-                  triggerCount={triggerCount}
-                  callState={callState}
-                  pulseKey={latestCustomerMessage}
-                  aiAnalyzing={aiAnalyzing}
-                  memoryInsight={memoryInsight}
-                  summaryMode={callState === 'ended'}
-                  summaryData={summaryData}
-                  liveInsight={liveInsight}
-                  lastCallSummary={lastCallSummary}
-                />
+              <div className="w-[25%] shrink-0 border-l border-slate-200 bg-white flex flex-col z-10 shadow-[-10px_0_30px_rgba(0,0,0,0.02)]">
+                <div className="flex-1 overflow-y-auto p-4">
+                  <AIAssistPanel
+                    suggestions={callState === 'ended' ? [] : dynamicSuggestions}
+                    latestCustomerMessage={latestCustomerMessage}
+                    triggerCount={triggerCount}
+                    callState={callState}
+                    pulseKey={latestCustomerMessage}
+                    aiAnalyzing={aiAnalyzing}
+                    memoryInsight={memoryInsight}
+                    summaryMode={callState === 'ended'}
+                    summaryData={summaryData}
+                    liveInsight={liveInsight}
+                    lastCallSummary={lastCallSummary}
+                  />
+                </div>
               </div>
             </>
           )}

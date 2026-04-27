@@ -34,6 +34,7 @@ const agentKpis = [
 
 const AgentDashboard = () => {
   const navigate = useNavigate();
+  const [selectedTimeRange, setSelectedTimeRange] = useState('Today');
   const { 
     setActiveCustomer, 
     resetCallSession, 
@@ -51,7 +52,8 @@ const AgentDashboard = () => {
   } = useApp();
   
   const [toast, setToast] = useState('');
-  const [activeFilter, setActiveFilter] = useState('All Leads');
+  const [selectedProject, setSelectedProject] = useState('All Projects');
+  const [leadTypeFilter, setLeadTypeFilter] = useState('All Leads');
   const [searchQuery, setSearchQuery] = useState('');
   const [showHistoryModal, setShowHistoryModal] = useState(false);
 
@@ -63,17 +65,19 @@ const AgentDashboard = () => {
       
       if (!matchesSearch) return false;
 
-      // Category filter
-      if (activeFilter === 'All Leads') return true;
-      if (activeFilter === 'Hot 🔥') return lead.aiIntentScore > 80;
-      if (activeFilter === 'Warm') return lead.aiIntentScore <= 80 && lead.aiIntentScore > 40;
-      if (activeFilter === 'Cold') return lead.aiIntentScore <= 40;
-      if (activeFilter === 'Realty One') return lead.propertyInterest.includes('Realty One');
-      if (activeFilter === 'Elysium') return lead.propertyInterest.includes('Elysium');
+      // Project filter
+      const matchesProject = selectedProject === 'All Projects' || lead.propertyInterest.includes(selectedProject);
+      if (!matchesProject) return false;
+
+      // Lead Type filter
+      if (leadTypeFilter === 'All Leads') return true;
+      if (leadTypeFilter === 'Hot 🔥') return lead.aiIntentScore > 80;
+      if (leadTypeFilter === 'Warm') return lead.aiIntentScore <= 80 && lead.aiIntentScore > 40;
+      if (leadTypeFilter === 'Cold') return lead.aiIntentScore <= 40;
       
       return true;
     });
-  }, [activeFilter, searchQuery]);
+  }, [selectedProject, leadTypeFilter, searchQuery]);
 
   const handleCallLead = (lead) => {
     setSelectedLeadId(lead.id);
@@ -95,6 +99,32 @@ const AgentDashboard = () => {
 
   return (
     <AppShell title="Agent Command Center">
+      {/* Header Section */}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-black text-[#0A2C5E] tracking-tight">Agent Command Center</h1>
+          <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Performance Overview & Lead Management</p>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <div className="flex bg-slate-100/50 p-1 rounded-xl border border-slate-200">
+            {['Today', 'Last Week', 'Overall'].map((range) => (
+              <button
+                key={range}
+                onClick={() => setSelectedTimeRange(range)}
+                className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                  selectedTimeRange === range 
+                    ? 'bg-white text-[#0A2C5E] shadow-sm' 
+                    : 'text-slate-400 hover:text-slate-600'
+                }`}
+              >
+                {range}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* KPI Section */}
       <section className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         {agentKpis.map((kpi, idx) => (
@@ -145,16 +175,40 @@ const AgentDashboard = () => {
               </div>
             </div>
 
-            <div className="p-4 bg-slate-50/50 flex flex-wrap gap-2">
-              {['All Leads', 'Hot 🔥', 'Warm', 'Cold', 'Realty One', 'Elysium'].map((f) => (
-                <button 
-                  key={f} 
-                  onClick={() => setActiveFilter(f)}
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${activeFilter === f ? 'bg-[#0A2C5E] text-white shadow-md' : 'bg-white text-slate-500 border border-slate-200 hover:border-slate-300'}`}
-                >
-                  {f}
-                </button>
-              ))}
+            <div className="px-6 py-4 bg-slate-50/50 border-b border-slate-100 flex flex-col md:flex-row gap-6 md:items-center">
+              {/* Project Selection */}
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Project:</span>
+                <div className="flex gap-2">
+                  {['All Projects', 'Realty One', 'Elysium'].map((p) => (
+                    <button 
+                      key={p} 
+                      onClick={() => setSelectedProject(p)}
+                      className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all ${selectedProject === p ? 'bg-[#0A2C5E] text-white shadow-sm' : 'bg-white text-slate-500 border border-slate-200 hover:border-slate-300'}`}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="h-6 w-px bg-slate-200 hidden md:block" />
+
+              {/* Lead Type Selection */}
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Leads:</span>
+                <div className="flex gap-2">
+                  {['All Leads', 'Hot 🔥', 'Warm', 'Cold'].map((f) => (
+                    <button 
+                      key={f} 
+                      onClick={() => setLeadTypeFilter(f)}
+                      className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all ${leadTypeFilter === f ? 'bg-[#D71920] text-white shadow-sm' : 'bg-white text-slate-500 border border-slate-200 hover:border-slate-300'}`}
+                    >
+                      {f}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 min-h-[400px]">
@@ -211,7 +265,7 @@ const AgentDashboard = () => {
               {filteredLeads.length === 0 && (
                 <div className="col-span-full flex flex-col items-center justify-center text-slate-400 py-12">
                   <Search size={48} className="mb-4 opacity-20" />
-                  <p className="text-sm font-bold uppercase tracking-widest">No leads found for "{activeFilter}"</p>
+                  <p className="text-sm font-bold uppercase tracking-widest">No leads found for this selection</p>
                 </div>
               )}
             </div>

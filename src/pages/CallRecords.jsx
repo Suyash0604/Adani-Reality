@@ -44,6 +44,7 @@ const CallRecords = () => {
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sentimentFilter, setSentimentFilter] = useState('All');
+  const [dateRangeFilter, setDateRangeFilter] = useState('Today');
   
   const navigate = useNavigate();
   const isSupervisor = user?.role === 'supervisor';
@@ -275,7 +276,24 @@ const CallRecords = () => {
                     className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-100 outline-none transition-all"
                   />
                </div>
-               <div className="flex gap-2">
+               <div className="flex gap-3">
+                  {/* Date Range Filter */}
+                  <div className="flex bg-slate-50 p-1 rounded-xl border border-slate-100">
+                    {['Today', 'Last Week', 'Overall'].map((range) => (
+                      <button
+                        key={range}
+                        onClick={() => setDateRangeFilter(range)}
+                        className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                          dateRangeFilter === range 
+                            ? 'bg-white text-[#0A2C5E] shadow-sm' 
+                            : 'text-slate-400 hover:text-slate-600'
+                        }`}
+                      >
+                        {range}
+                      </button>
+                    ))}
+                  </div>
+
                   <select 
                     value={sentimentFilter}
                     onChange={(e) => setSentimentFilter(e.target.value)}

@@ -498,7 +498,25 @@ const SupervisorDashboard = () => {
           <h1 className="text-2xl font-black text-[#0A2C5E] tracking-tight">Supervisor Command Center</h1>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-6">
+          {/* Date Range Filter */}
+          <div className="flex bg-slate-100/50 p-1 rounded-xl border border-slate-200">
+            {['Today', 'Last Week', 'Overall'].map((range) => (
+              <button
+                key={range}
+                onClick={() => setSelectedTimeRange(range)}
+                className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                  selectedTimeRange === range 
+                    ? 'bg-white text-[#0A2C5E] shadow-sm' 
+                    : 'text-slate-400 hover:text-slate-600'
+                }`}
+              >
+                {range}
+              </button>
+            ))}
+          </div>
+
+          <div className="h-8 w-px bg-slate-200 hidden md:block" />
 
           <button
             onClick={() => setShowCreateProject(true)}

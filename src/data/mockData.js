@@ -9,6 +9,7 @@ export const projects = [
   { id: 'proj-2', name: 'Adani Western Heights', location: 'Mumbai' },
   { id: 'proj-3', name: 'Adani Codename Capital', location: 'Pune' },
   { id: 'proj-4', name: 'Adani Shantigram', location: 'Ahmedabad' },
+  { id: 'proj-5', name: 'Adani Amogha', location: 'Ahmedabad' },
 ];
 
 export const leads = [
@@ -47,6 +48,18 @@ export const leads = [
     leadCreatedDate: '2026-04-17',
     previousInteractions: 'Interested in sea-facing units and parking allocation.',
     aiIntentScore: 89,
+  },
+  {
+    id: 'lead-1004',
+    name: 'Anjali Sharma',
+    phone: '+91 96543 21098',
+    city: 'Ahmedabad',
+    leadSource: 'Instagram',
+    propertyInterest: 'Adani Amogha - 3 BHK',
+    budget: '1.2 Cr - 1.4 Cr',
+    leadCreatedDate: '2026-04-20',
+    previousInteractions: 'Inquired about proximity to metro station and payment plans.',
+    aiIntentScore: 92,
   },
 ];
 
@@ -112,6 +125,16 @@ export const supervisorAgents = [
     duration: '-',
     sentiment: '🙂',
     scriptScore: 88,
+    alert: false,
+  },
+  {
+    id: 'agent-4',
+    name: 'Suresh Kumar',
+    status: 'Break',
+    customer: '-',
+    duration: '-',
+    sentiment: '😐',
+    scriptScore: 72,
     alert: false,
   },
 ];
@@ -208,6 +231,21 @@ export const campaignData = {
         resolutionMix: { ai: 85, agent: 12, escalated: 3 },
         sentimentTrend: 'Positive'
       }
+    },
+    {
+      id: 'ib-4',
+      title: 'Booking Support',
+      callsToday: 180,
+      resolutionRate: 88,
+      pendingCases: 8,
+      criticalEscalations: 1,
+      details: {
+        liveQueue: { waiting: 5, longestWait: '8m', agentsAvailable: 6 },
+        breakdown: { possessionDelay: 5, qualityIssues: 10, parking: 15, documents: 70 },
+        escalationQueue: [],
+        resolutionMix: { ai: 50, agent: 45, escalated: 5 },
+        sentimentTrend: 'Neutral'
+      }
     }
   ],
   outbound: [
@@ -249,6 +287,19 @@ export const campaignData = {
         aiInsights: 'Festive offer connect is highest in Pune region',
         leadQuality: 62
       }
+    },
+    {
+      id: 'ob-4',
+      title: 'Post-Sales Followup',
+      callsMade: 600,
+      connectRate: 58,
+      conversions: 42,
+      details: {
+        stats: { total: 600, reached: 348, failed: 252 },
+        metrics: { siteVisits: 0, dropped: 10 },
+        aiInsights: 'Customers are satisfied with the current construction progress.',
+        leadQuality: 90
+      }
     }
   ]
 };
@@ -259,4 +310,5 @@ export const mockRecentCalls = [
   { id: 'call-3', customer: 'Rajesh Kumar', issue: 'Parking Slot Query', duration: '03:15', status: 'In Progress', sentiment: '🙂', type: 'Inbound' },
   { id: 'call-4', customer: 'Priya Verma', issue: 'KYC Document Collection', duration: '12:10', status: 'In Progress', sentiment: '😐', type: 'Outbound' },
   { id: 'call-5', customer: 'Karan Singh', issue: 'Payment Reminder', duration: '04:30', status: 'Resolved', sentiment: '🙂', type: 'Outbound' },
+  { id: 'call-6', customer: 'Megha Gupta', issue: 'Site Visit Confirmation', duration: '02:45', status: 'Resolved', sentiment: '🙂', type: 'Outbound' },
 ];

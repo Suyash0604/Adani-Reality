@@ -53,6 +53,14 @@ const AppShell = ({ title, children, fitViewport = false }) => {
         </div>
 
         <div className="flex items-center gap-6">
+          {/* POWERED BY BRANDING */}
+          <div className="hidden md:flex flex-col items-end gap-0.5 px-4 py-1.5 rounded-xl bg-slate-50/50 border border-slate-100">
+             <span className="text-[7px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none">Powered by</span>
+             <span className="text-[10px] font-black text-[#0A2C5E] uppercase tracking-wider leading-none">Markytics.ai</span>
+          </div>
+          
+          <div className="h-8 w-px bg-slate-100 hidden md:block" />
+
           {/* USER PROFILE & LOGOUT */}
           <div className="flex items-center gap-4 group">
              <div className="text-right hidden sm:block">
@@ -127,8 +135,11 @@ const AppShell = ({ title, children, fitViewport = false }) => {
             })}
           </div>
 
-          <div className="p-4 border-t border-slate-50">
-             {/* Bottom space preserved for future use or purely for layout balance */}
+          <div className="p-6 border-t border-slate-50 mt-auto">
+             <div className={`transition-all duration-500 ${isExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 pointer-events-none'}`}>
+                <p className="text-[7px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Powered by</p>
+                <p className="text-[10px] font-black text-[#0A2C5E] uppercase tracking-widest">Markytics.ai</p>
+             </div>
           </div>
         </aside>
 
